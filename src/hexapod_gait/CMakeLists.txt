@@ -8,24 +8,33 @@ endif()
 # find dependencies
 find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
-# uncomment the following section in order to fill in
-# further dependencies manually.
-# find_package(<dependency> REQUIRED)
+find_package(sensor_msgs REQUIRED)
+find_package(geometry_msgs REQUIRED)
+find_package(std_msgs REQUIRED)
+find_package(Eigen3 REQUIRED)
 
 add_executable(hexapod_gait 
   src/hexapod_gait.cpp 
   src/hexapod_ik.cpp
+  src/trajectory_generator.cpp
+  src/gait_strategy.cpp
   src/gait_factory.cpp
   src/riple_gait_concrete.cpp
   src/wave_gait_concrete.cpp
+  src/tripod_gait_concrete.cpp
   )
 target_include_directories(hexapod_gait PUBLIC
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
   $<INSTALL_INTERFACE:include>)
 target_compile_features(hexapod_gait PUBLIC c_std_99 cxx_std_17)  # Require C99 and C++17
 
+target_link_libraries(hexapod_gait Eigen3::Eigen)
+
 ament_target_dependencies(hexapod_gait
   rclcpp
+  sensor_msgs
+  geometry_msgs
+  std_msgs
 )
 
 install(TARGETS hexapod_gait
