@@ -13,31 +13,22 @@ namespace hexapod_gait
 {
 
 
-std::unique_ptr<GaitStrategy> GaitFactory::create_gait(const std::string &type, double duty_cycle)
+std::unique_ptr<GaitStrategy> GaitFactory::create_gait(const std::string &type, int total_cycle_steps, double duty_cycle)
 {
     if (type == "wave_gait")
     {
-        if (duty_cycle > 0.0)
-        {
-            return std::make_unique<WaveGaitConcrete>(duty_cycle);
-        }
-        return std::make_unique<WaveGaitConcrete>();
+        double dc = (duty_cycle > 0.0) ? duty_cycle : (5.0 / 6.0);
+        return std::make_unique<WaveGaitConcrete>(dc, total_cycle_steps);
     }
     else if (type == "ripple_gait" || type == "riple_gait")
     {
-        if (duty_cycle > 0.0)
-        {
-            return std::make_unique<RipleGaitConcrete>(duty_cycle);
-        }
-        return std::make_unique<RipleGaitConcrete>();
+        double dc = (duty_cycle > 0.0) ? duty_cycle : (4.0 / 6.0);
+        return std::make_unique<RipleGaitConcrete>(dc, total_cycle_steps);
     }
     else if (type == "tripod_gait")
     {
-        if (duty_cycle > 0.0)
-        {
-            return std::make_unique<TripodGaitConcrete>(duty_cycle);
-        }
-        return std::make_unique<TripodGaitConcrete>();
+        double dc = (duty_cycle > 0.0) ? duty_cycle : (3.0 / 6.0);
+        return std::make_unique<TripodGaitConcrete>(dc, total_cycle_steps);
     }
 
     return nullptr;

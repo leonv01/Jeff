@@ -18,13 +18,13 @@ namespace hexapod_gait
 {
 
 
-#define CALCULATE_LEG_MOUNT(x) ((2.0 * M_PI / LEG_COUNT) * (x))
+#define DEG2RAD(x) ((M_PI / 180.0) * (x))
 
-LegData::LegData(double coxa_joint, double tibia_joint, double femur_joint, LEG_SIDE leg_side, double leg_phase, double leg_stance_offset, double leg_mount_angle)
+LegData::LegData(double coxa_joint, double femur_joint, double tibia_joint, LEG_SIDE leg_side, double leg_phase, double leg_stance_offset, double leg_mount_angle)
 {
     coxa_joint_ = coxa_joint;
-    tibia_joint_ = tibia_joint;
     femur_joint_ = femur_joint;
+    tibia_joint_ = tibia_joint;
     leg_phase_ = leg_phase;
     leg_stance_offset_ = leg_stance_offset;
     leg_mount_angle_ = leg_mount_angle;
@@ -48,12 +48,12 @@ GaitStrategy::GaitStrategy(double duty_cycle, std::unordered_map<LEG, double> le
     : duty_cycle_(duty_cycle),
       total_cycle_steps_(total_cycle_steps),
       leg_map_({
-          { RF_LEG, { 0.0, 0.0, 0.0, LEFT, 0.0, 0.0, CALCULATE_LEG_MOUNT(1) } },
-          { RM_LEG, { 0.0, 0.0, 0.0, LEFT, 0.0, 0.0, CALCULATE_LEG_MOUNT(0) } },
-          { RR_LEG, { 0.0, 0.0, 0.0, LEFT, 0.0, 0.0, CALCULATE_LEG_MOUNT(2) } },
-          { LF_LEG, { 0.0, 0.0, 0.0, RIGHT, 0.0, 0.0, CALCULATE_LEG_MOUNT(4) } },
-          { LM_LEG, { 0.0, 0.0, 0.0, RIGHT, 0.0, 0.0, CALCULATE_LEG_MOUNT(3) } },
-          { LR_LEG, { 0.0, 0.0, 0.0, RIGHT, 0.0, 0.0, CALCULATE_LEG_MOUNT(5) } }
+          { LF_LEG, { 0.0, 0.0, 0.0, LEFT,  0.0, 0.0, DEG2RAD(0.0) } },
+          { LM_LEG, { 0.0, 0.0, 0.0, LEFT,  0.0, 0.0, DEG2RAD(60.0) } },
+          { LR_LEG, { 0.0, 0.0, 0.0, LEFT,  0.0, 0.0, DEG2RAD(120.0) } },
+          { RF_LEG, { 0.0, 0.0, 0.0, RIGHT, 0.0, 0.0, DEG2RAD(180.0) } },
+          { RM_LEG, { 0.0, 0.0, 0.0, RIGHT, 0.0, 0.0, DEG2RAD(240.0) } },
+          { RR_LEG, { 0.0, 0.0, 0.0, RIGHT, 0.0, 0.0, DEG2RAD(300.0) } }
       }),
       leg_offsets_(leg_offsets.empty() ? std::unordered_map<LEG, double>{
           { LF_LEG, 0.0 }, { LM_LEG, 0.0 }, { LR_LEG, 0.0 },
@@ -62,75 +62,50 @@ GaitStrategy::GaitStrategy(double duty_cycle, std::unordered_map<LEG, double> le
 {
 }
 
-std::unordered_map<LEG, LegData> GaitStrategy::propagate_gait(int step, double stride_length, double swing_height, double alpha)
+std::unordered_map<LEG, LegData> GaitStrategy::propagate_gait(int step, double stride_length, double swing_height, const Eigen::Vector3d &relative_target, double alpha)
 {
-    std::for_each(leg_map_.begin(), leg_map_.end(), [this, step, stride_length, swing_height, alpha](auto& leg_entry) {
-        leg_entry.second = this->propagate_leg(leg_entry.first, step, stride_length, swing_height, alpha);
+    std::for_each(leg_map_.begin(), leg_map_.end(), [this, step, stride_length, swing_height, relative_target, alpha](auto& leg_entry) {
+        leg_entry.second = this->propagate_leg(leg_entry.first, step, stride_length, swing_height, relative_target, alpha);
     });
 
     return leg_map_;
 }
 
-LegData GaitStrategy::propagate_leg(LEG leg, int step, double stride_length, double swing_height, double alpha)
+LegData GaitStrategy::propagate_leg(LEG leg, int step, double stride_length, double swing_height, const Eigen::Vector3d &relative_target, double alpha)
 {
     LegData leg_data = get_leg(leg);
+
+    const Eigen::Vector3d walk_dir(std::cos(alpha), std::sin(alpha), 0.0);
 
     double swing_fraction = 1.0 - duty_cycle_;
     double global_progress = static_cast<double>(step % total_cycle_steps_) / static_cast<double>(total_cycle_steps_);
     double leg_phase = std::fmod(global_progress - leg_offsets_[leg] + 1.0, 1.0);
     double mount_angle = leg_data.leg_mount_angle_;
-
-    const Eigen::Vector3d local_neutral(0.17, 0.0, -0.12);
+    
     Eigen::Matrix3d T_leg = Eigen::AngleAxisd(mount_angle, Eigen::Vector3d::UnitZ()).toRotationMatrix();
-    Eigen::Vector3d body_neutral = T_leg * local_neutral;
+    Eigen::Matrix3d T_leg_t = T_leg.transpose();
 
-    Eigen::Vector3d body_foot_pos;
-
+    Eigen::Vector3d offset_body;
     if (leg_phase < swing_fraction)
     {
-        double tau = leg_phase / swing_fraction; 
-        double phi = tau * M_PI;
-
-        double s = (tau - 0.5) * stride_length;
-        if (leg_data.leg_side_ == RIGHT)
-        {
-            s = -s;
-        }
-        double z_lift = swing_height * std::sin(phi);
-
-        Eigen::Vector3d stride_dir(std::cos(alpha), std::sin(alpha), 0.0);
-        body_foot_pos = body_neutral + (stride_dir * s) + Eigen::Vector3d(0, 0, z_lift);
+        double t = leg_phase / swing_fraction;
+        double phi = t * M_PI;
+        offset_body = -walk_dir * (stride_length / 2.0) * std::cos(phi) + Eigen::Vector3d(0.0, 0.0, swing_height * std::sin(phi));
     }
     else
     {
-        double tau = (leg_phase - swing_fraction) / duty_cycle_; // 0.0 to 1.0
-
-        double s = (0.5 - tau) * stride_length;
-        if (leg_data.leg_side_ == RIGHT)
-        {
-            s = -s;
-        }
-
-        Eigen::Vector3d stride_dir(std::cos(alpha), std::sin(alpha), 0.0);
-        body_foot_pos = body_neutral + (stride_dir * s);
+        double tau = (leg_phase - swing_fraction) / duty_cycle_;
+        offset_body = walk_dir * (stride_length / 2.0) * (1.0 - 2.0 * tau);
     }
 
-    Eigen::Vector3d leg_target_local = T_leg.transpose() * body_foot_pos;
+    const Eigen::Vector3d P_home_local = relative_target.transpose();
+    const Eigen::Vector3d P_local = P_home_local + T_leg_t * offset_body;
 
-    const Eigen::Vector3d angles = HexapodIk::solve_ik(leg_target_local);
+    const auto angles = HexapodIk::solve_ik(P_local);
 
-    if (leg_data.leg_side_ == LEFT)
-    {
-        leg_data.coxa_joint_  = angles[0];  
-        leg_data.femur_joint_ = angles[1]; 
-        leg_data.tibia_joint_ = angles[2]; 
-    }
-    else // RIGHT side legs (URDF joint frames are 180 deg rotated relative to Left side)
-    {
-        leg_data.coxa_joint_  = -angles[0];  
-        leg_data.femur_joint_ = -angles[1]; 
-        leg_data.tibia_joint_ = -angles[2]; 
-    }
+    leg_data.coxa_joint_ = angles[0];
+    leg_data.femur_joint_ = angles[1];
+    leg_data.tibia_joint_ = angles[2];
 
     return leg_data;
 }

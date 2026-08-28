@@ -80,18 +80,18 @@ struct LegData
     /**
      * @brief Parameterized constructor using individual joint angles.
      * @param coxa_joint Coxa joint angle in radians.
-     * @param tibia_joint Tibia joint angle in radians.
      * @param femur_joint Femur joint angle in radians.
+     * @param tibia_joint Tibia joint angle in radians.
      * @param leg_side Mounting side designation (LEFT or RIGHT).
      * @param leg_phase Initial normalized leg phase.
      * @param leg_stance_offset Stance phase offset.
      * @param leg_mount_angle Body mounting angle in radians.
      */
-    LegData(double coxa_joint, double tibia_joint, double femur_joint, LEG_SIDE leg_side, double leg_phase = 0.0, double leg_stance_offset = 0.0, double leg_mount_angle = 0.0);
+    LegData(double coxa_joint, double femur_joint, double tibia_joint, LEG_SIDE leg_side, double leg_phase = 0.0, double leg_stance_offset = 0.0, double leg_mount_angle = 0.0);
 
     /**
      * @brief Parameterized constructor using a 3D vector of joint angles.
-     * @param angles Vector of (coxa, tibia, femur) angles in radians.
+     * @param angles Vector of (coxa, femur, tibia) angles in radians.
      * @param leg_side Mounting side designation (LEFT or RIGHT).
      * @param leg_phase Initial normalized leg phase.
      * @param leg_stance_offset Stance phase offset.
@@ -142,10 +142,11 @@ public:
      * @param step Current global step count in the cycle.
      * @param stride_length Target stride length in meters.
      * @param swing_height Maximum swing height in meters.
+     * @param relative_target Target coordinate offset.
      * @param alpha Heading/direction angle in radians.
      * @return std::unordered_map<LEG, LegData> Map of updated leg states indexed by leg enum.
      */
-    virtual std::unordered_map<LEG, LegData> propagate_gait(int step, double stride_length = 0.0, double swing_height = 0.0, double alpha = 0.0);
+    virtual std::unordered_map<LEG, LegData> propagate_gait(int step, double stride_length = 0.0, double swing_height = 0.0, const Eigen::Vector3d &relative_target = Eigen::Vector3d(0.08, 0.0, -0.08), double alpha = 0.0);
 
     /**
      * @brief Computes trajectory and joint angles for a single leg at a given step.
@@ -153,10 +154,11 @@ public:
      * @param step Current global step count in the cycle.
      * @param stride_length Target stride length in meters.
      * @param swing_height Maximum swing height in meters.
+     * @param relative_target Target coordinate offset.
      * @param alpha Heading/direction angle in radians.
      * @return LegData Updated state for the specified leg.
      */
-    virtual LegData propagate_leg(LEG leg, int step, double stride_length = 0.0, double swing_height = 0.0, double alpha = 0.0);
+    virtual LegData propagate_leg(LEG leg, int step, double stride_length = 0.0, double swing_height = 0.0, const Eigen::Vector3d &relative_target = Eigen::Vector3d(0.08, 0.0, -0.08), double alpha = 0.0);
 
     /**
      * @brief Retrieves stored LegData for a given leg ID.

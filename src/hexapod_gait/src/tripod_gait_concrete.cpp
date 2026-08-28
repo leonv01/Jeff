@@ -22,14 +22,14 @@ TripodGaitConcrete::TripodGaitConcrete(double duty_cycle, double total_cycle_ste
 {
 }
 
-std::unordered_map<LEG, LegData> TripodGaitConcrete::propagate_gait(int step, double stride_length, double swing_height, double alpha)
+std::unordered_map<LEG, LegData> TripodGaitConcrete::propagate_gait(int step, double stride_length, double swing_height, const Eigen::Vector3d &relative_target, double alpha)
 {
-    return GaitStrategy::propagate_gait(step, stride_length, swing_height, alpha);
+    return GaitStrategy::propagate_gait(step, stride_length, swing_height, relative_target, alpha);
 }
 
-LegData TripodGaitConcrete::propagate_leg(LEG leg, int step, double stride_length, double swing_height, double alpha)
+LegData TripodGaitConcrete::propagate_leg(LEG leg, int step, double stride_length, double swing_height, const Eigen::Vector3d &relative_target, double alpha)
 {
-    return GaitStrategy::propagate_leg(leg, step, stride_length, swing_height, alpha);
+    return GaitStrategy::propagate_leg(leg, step, stride_length, swing_height, relative_target, alpha);
 }
 
 }
