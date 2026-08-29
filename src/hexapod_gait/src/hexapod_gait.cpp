@@ -89,7 +89,7 @@ void HexapodGait::control_timer_callback()
 
   double max_stride_length = 0.08; // 60 mm (0.06 m) max stride length
   double stride_length = (speed > 0.001) ? std::clamp(speed * 0.5, 0.01, max_stride_length) : 0.0;
-  double swing_height = (speed > 0.001) ? 0.04 : 0.0; // 25 mm (0.025 m) swing height
+  double swing_height = (speed > 0.001) ? 0.06 : 0.0; // 25 mm (0.025 m) swing height
 
   if (speed > 0.001 || std::abs(current_velocity_.angular.z) > 0.001)
   {
@@ -164,12 +164,9 @@ void HexapodGait::adjust_leg_angles(LegData &leg_data)
     leg_data.tibia_joint_ = M_PI - std::abs(leg_data.tibia_joint_ - M_PI / 2.0);
   }
 
-  if (leg_data.coxa_joint_ > M_PI || leg_data.coxa_joint_ < 0.0) 
-    RCLCPP_WARN(this->get_logger(), "Coxa joint exceeds limits: %.2f", leg_data.coxa_joint_);
-  if (leg_data.femur_joint_ > M_PI || leg_data.femur_joint_ < 0.0) 
-    RCLCPP_WARN(this->get_logger(), "Femur joint exceeds limits: %.2f", leg_data.femur_joint_);
-  if (leg_data.tibia_joint_ > M_PI || leg_data.tibia_joint_ < 0.0) 
-    RCLCPP_WARN(this->get_logger(), "Tibia joint exceeds limits: %.2f", leg_data.tibia_joint_);
+  leg_data.coxa_joint = std::clamp(leg_data.coxa_joint, 0.0, M_PI);
+  leg_data.femur_joint_ = std::clamp(leg_data.femur_joint_, 0.0, M_PI);
+  leg_data.tibia_joint_ = std::clamp(leg_data.tibia_joint_, 0.0, M_PI);
 }
 
 }
