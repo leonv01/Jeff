@@ -16,29 +16,18 @@ PCA9685Concrete::PCA9685Concrete(std::vector<unsigned int> ids_)
     }
 
     channel_mapping_ = {
-        { 0, std::tuple{ 0x40, 0x00 } },
-        { 1, std::tuple{ 0x40, 0x01 } },
-        { 2, std::tuple{ 0x40, 0x02 } },
-
-        { 3, std::tuple{ 0x40, 0x04 } },
-        { 4, std::tuple{ 0x40, 0x05 } },
-        { 5, std::tuple{ 0x40, 0x06 } },
-
-        { 6, std::tuple{ 0x40, 0x08 } },
-        { 7, std::tuple{ 0x40, 0x09 } },
-        { 8, std::tuple{ 0x40, 0x0A } },
-
-        { 9, std::tuple{ 0x41, 0x00 } },
-        { 10, std::tuple{ 0x41, 0x01 } },
-        { 11, std::tuple{ 0x41, 0x02 } },
-
-        { 12, std::tuple{ 0x41, 0x04 } },
-        { 13, std::tuple{ 0x41, 0x05 } },
-        { 14, std::tuple{ 0x41, 0x06 } },
-
-        { 15, std::tuple{ 0x41, 0x0D } },
-        { 16, std::tuple{ 0x41, 0x0E } },
-        { 17, std::tuple{ 0x41, 0x0F } },
+        // Left Front (LF)
+        { 0x40, 0 }, { 0x40, 1 }, { 0x40, 2 },
+        // Left Middle (LM)
+        { 0x40, 4 }, { 0x40, 5 }, { 0x40, 6 },
+        // Left Rear (LR)
+        { 0x40, 8 }, { 0x40, 9 }, { 0x40, 10 },
+        // Right Front (RF)
+        { 0x41, 0 }, { 0x41, 1 }, { 0x41, 2 },
+        // Right Middle (RM)
+        { 0x41, 4 }, { 0x41, 5 }, { 0x41, 6 },
+        // Right Rear (RR)
+        { 0x41, 8 }, { 0x41, 9 }, { 0x41, 10 }
     };
 }
 
@@ -47,12 +36,42 @@ bool PCA9685Concrete::initialize()
     return true;
 }
 
+void PCA9685Concrete::configure_channels(const std::vector<std::string> &joint_names)
+{
+    static const std::unordered_map<std::string, ServoChannelMap> joint_lookup = {
+        // Left Front (LF)
+        { "coxa_joint_2",  { 0x40, 0 } }, { "femur_joint_2", { 0x40, 1 } }, { "tibia_joint_2", { 0x40, 2 } },
+        // Left Middle (LM)
+        { "coxa_joint_3",  { 0x40, 4 } }, { "femur_joint_3", { 0x40, 5 } }, { "tibia_joint_3", { 0x40, 6 } },
+        // Left Rear (LR)
+        { "coxa_joint_5",  { 0x40, 8 } }, { "femur_joint_5", { 0x40, 9 } }, { "tibia_joint_5", { 0x40, 10 } },
+        // Right Front (RF)
+        { "coxa_joint_1",  { 0x41, 0 } }, { "femur_joint_1", { 0x41, 1 } }, { "tibia_joint_1", { 0x41, 2 } },
+        // Right Middle (RM)
+        { "coxa_joint",    { 0x41, 4 } }, { "femur_joint",   { 0x41, 5 } }, { "tibia_joint",   { 0x41, 6 } },
+        // Right Rear (RR)
+        { "coxa_joint_4",  { 0x41, 8 } }, { "femur_joint_4", { 0x41, 9 } }, { "tibia_joint_4", { 0x41, 10 } }
+    };
+
+    channel_mapping_.resize(joint_names.size());
+    for (size_t i = 0; i < joint_names.size(); i++)
+    {
+        auto it = joint_lookup.find(joint_names[i]);
+        if (it != joint_lookup.end())
+        {
+            channel_mapping_[i] = it->second;
+        }
+    }
+}
+
 void PCA9685Concrete::set_angle_rad(ServoCommand &servo_command) 
 {
-    auto [address, channel] = channel_mapping_[servo_command.leg];
+    if (servo_command.leg >= channel_mapping_.size()) return;
+
+    const auto &target = channel_mapping_[servo_command.leg];
 
     unsigned int pwm_tick = rad_to_pwm(servo_command.angle);
-    pcas_[address]->set_pwm(channel, 0, pwm_tick);    
+    pcas_[target.address]->set_pwm(target.channel, 0, pwm_tick);    
 }
 
 void PCA9685Concrete::set_angle_degree(ServoCommand &servo_command) 

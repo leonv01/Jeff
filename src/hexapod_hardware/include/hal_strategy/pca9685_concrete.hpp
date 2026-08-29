@@ -10,6 +10,7 @@
 #include <unordered_map>
 #include <cmath>
 #include <tuple>
+#include <string>
 
 namespace hexapod_hardware
 {
@@ -19,6 +20,7 @@ public:
     PCA9685Concrete(std::vector<unsigned int> ids_ = { 0x40, 0x41 });
 
     bool initialize() override;
+    void configure_channels(const std::vector<std::string> &joint_names) override;
 
     void set_angle_rad(ServoCommand &servo_command) override;
     void set_angle_degree(ServoCommand &servo_command) override;
@@ -29,7 +31,7 @@ public:
 
 private:
     std::unordered_map<unsigned int, std::unique_ptr<PiPCA9685::PCA9685>> pcas_;
-    std::unordered_map<unsigned int, std::tuple<unsigned int, unsigned int>> channel_mapping_;
+    std::vector<ServoChannelMap> channel_mapping_;
     
     const double FREQUENCY_ = 50.0;
 

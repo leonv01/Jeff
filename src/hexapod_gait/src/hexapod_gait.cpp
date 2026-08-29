@@ -87,11 +87,9 @@ void HexapodGait::control_timer_callback()
   double alpha = (speed > 0.001) ? std::atan2(vy, vx) : 0.0;
   
 
-  double max_stride_length = 0.06; // 60 mm (0.06 m) max stride length
-  double stride_length = 0.08; // (speed > 0.001) ? std::clamp(speed * 0.5, 0.01, max_stride_length) : 0.0;
-  double swing_height = 0.04; // (speed > 0.001) ? 0.025 : 0.0; // 25 mm (0.025 m) swing height
-
-  alpha = M_PI;
+  double max_stride_length = 0.08; // 60 mm (0.06 m) max stride length
+  double stride_length = (speed > 0.001) ? std::clamp(speed * 0.5, 0.01, max_stride_length) : 0.0;
+  double swing_height = (speed > 0.001) ? 0.04 : 0.0; // 25 mm (0.025 m) swing height
 
   if (speed > 0.001 || std::abs(current_velocity_.angular.z) > 0.001)
   {
@@ -148,27 +146,33 @@ void HexapodGait::control_timer_callback()
 
 void HexapodGait::body_pose_callback(const geometry_msgs::msg::Pose::SharedPtr msg)
 {
-  double body_x = msg->position.x;
-  double body_y = msg->position.y;
-  double body_z = msg->position.z;
-  
-  
+  (void)msg;  
 }
 
 void HexapodGait::adjust_leg_angles(LegData &leg_data)
 {
   if (leg_data.leg_side_ == LEG_SIDE::RIGHT)
   {
-    leg_data.coxa_joint_ = leg_data.coxa_joint_;
+    leg_data.coxa_joint_ = std::abs(M_PI / 2.0 + leg_data.coxa_joint_);
     leg_data.femur_joint_ = std::abs(leg_data.femur_joint_ - M_PI / 2.0);
     leg_data.tibia_joint_ = std::abs(leg_data.tibia_joint_ + M_PI / 2.0);
   }
   else
   {
-    leg_data.coxa_joint_ = std::abs(2 * M_PI - (-leg_data.coxa_joint_));
-    leg_data.femur_joint_ = 2 * M_PI - std::abs(leg_data.femur_joint_ - M_PI / 2.0);
-    leg_data.tibia_joint_ = 2 * M_PI - std::abs((leg_data.tibia_joint_ + M_PI / 2.0));
+    // leg_data.coxa_joint_ = std::abs(2 * M_PI - (-leg_data.coxa_joint_));
+    // leg_data.femur_joint_ = 2 * M_PI - std::abs(leg_data.femur_joint_ - M_PI / 2.0);
+    // leg_data.tibia_joint_ = 2 * M_PI - std::abs((leg_data.tibia_joint_ + M_PI / 2.0));
+    leg_data.coxa_joint_ = std::abs(M_PI - (M_PI / 2.0 + leg_data.coxa_joint_));
+    leg_data.femur_joint_ = std::abs(M_PI - leg_data.femur_joint_ - M_PI / 2.0);
+    leg_data.tibia_joint_ = std::abs(M_PI - (leg_data.tibia_joint_ + M_PI / 2.0));
   }
+
+  if (leg_data.coxa_joint_ > M_PI || leg_data.coxa_joint_ < 0.0) 
+    RCLCPP_WARN(this->get_logger(), "Coxa joint exceeds limits: %.2f", leg_data.coxa_joint_);
+  if (leg_data.femur_joint_ > M_PI || leg_data.femur_joint_ < 0.0) 
+    RCLCPP_WARN(this->get_logger(), "Femur joint exceeds limits: %.2f", leg_data.femur_joint_);
+  if (leg_data.tibia_joint_ > M_PI || leg_data.tibia_joint_ < 0.0) 
+    RCLCPP_WARN(this->get_logger(), "Tibia joint exceeds limits: %.2f", leg_data.tibia_joint_);
 }
 
 }

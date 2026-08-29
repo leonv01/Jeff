@@ -24,7 +24,32 @@ hardware_interface::CallbackReturn HexapodSystem::on_init(
     hw_commands_.resize(info_.joints.size(), 0.0);
     hw_states_.resize(info_.joints.size(), 0.0);
 
+    std::vector<std::string> joint_names;
+    joint_names.reserve(info_.joints.size());
+    joint_name_to_index_.clear();
+    for (size_t i = 0; i < info_.joints.size(); i++)
+    {
+        joint_names.push_back(info_.joints[i].name);
+        joint_name_to_index_[info_.joints[i].name] = i;
+    }
+
     servo_strategy_ = std::make_unique<MockConcrete>();
+    servo_strategy_->configure_channels(joint_names);
+
+    sub_node_ = rclcpp::Node::make_shared("hexapod_hw_joint_cmd_sub");
+    joint_cmd_sub_ = sub_node_->create_subscription<sensor_msgs::msg::JointState>(
+        "/joint_commands", 10,
+        [this](const sensor_msgs::msg::JointState::SharedPtr msg) {
+            for (size_t i = 0; i < msg->name.size(); i++)
+            {
+                auto it = joint_name_to_index_.find(msg->name[i]);
+                if (it != joint_name_to_index_.end() && i < msg->position.size())
+                {
+                    hw_commands_[it->second] = msg->position[i];
+                }
+            }
+        }
+    );
 
     return hardware_interface::CallbackReturn::SUCCESS;
 }
@@ -89,6 +114,11 @@ hardware_interface::return_type HexapodSystem::write(
     const rclcpp::Duration &period
 ) 
 {
+    if (sub_node_)
+    {
+        rclcpp::spin_some(sub_node_);
+    }
+
     for (size_t i = 0; i < hw_commands_.size(); i++)
     {
         ServoCommand command{ static_cast<unsigned int>(i), hw_commands_[i] }; 

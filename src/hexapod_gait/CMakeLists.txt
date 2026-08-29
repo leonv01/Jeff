@@ -55,6 +55,10 @@ if(BUILD_TESTING)
     DESTINATION share/${PROJECT_NAME}/test
   )
 
+  install(DIRECTORY launch
+    DESTINATION share/${PROJECT_NAME}
+  )
+
   ament_add_gtest(test_leg_ik
     test/test_leg_ik.cpp
     src/hexapod_ik.cpp

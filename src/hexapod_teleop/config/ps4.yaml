@@ -1,0 +1,39 @@
+# PS4 / DualShock 4 Controller Configuration for Jeff Hexapod Teleop
+teleop_twist_joy_node:
+  ros__parameters:
+    # --- Velocity Movement (Locomotion) ---
+    axis_linear:
+      x: 1       # Left stick Y (Up/Down) -> Forward / Backward
+      y: 0       # Left stick X (Left/Right) -> Strafe Left / Right
+    scale_linear:
+      x: 0.15    # Normal walking speed (m/s)
+      y: 0.15    # Normal strafe speed (m/s)
+    scale_linear_turbo:
+      x: 0.35    # Fast walking speed (m/s)
+      y: 0.35
+
+    axis_angular:
+      yaw: 3     # Right stick X (Left/Right) -> Yaw Rotation (Turn Left/Right)
+    scale_angular:
+      yaw: 0.5   # Normal turn rate (rad/s)
+    scale_angular_turbo:
+      yaw: 1.0   # Fast turn rate (rad/s)
+
+    enable_button: 4        # L1 Bumper -> Deadman switch (must hold to publish velocity)
+    enable_turbo_button: 5  # R1 Bumper -> Turbo mode button
+    require_enable_button: true
+
+# --- Hexapod Extended Control Mappings (Used by hexapod_teleop node) ---
+hexapod_teleop_node:
+  ros__parameters:
+    buttons:
+      tripod_gait: 0       # Cross: Select Tripod Gait (Fast)
+      ripple_gait: 1       # Circle: Select Ripple Gait (Medium)
+      wave_gait: 3         # Square: Select Wave Gait (Stable)
+      toggle_pose_mode: 2  # Triangle: Toggle Body Pose Mode vs Walk Mode
+      stand_sit_toggle: 9  # Options: Stand up / Sit down toggle
+
+    axes:
+      pitch: 4             # Right stick Y (Up/Down) -> Body Pitch tilt (in Pose Mode)
+      roll: 3              # Right stick X (Left/Right) -> Body Roll tilt (in Pose Mode)
+      height: 7            # D-Pad Y (Up/Down) -> Body Clearance Height offset (z)
