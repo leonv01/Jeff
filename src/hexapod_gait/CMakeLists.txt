@@ -50,11 +50,6 @@ if(BUILD_TESTING)
   find_package(ament_cmake_gtest REQUIRED)
   find_package(ament_index_cpp REQUIRED)
 
-  install(
-    FILES test/angle_history.csv
-    DESTINATION share/${PROJECT_NAME}/test
-  )
-
   install(DIRECTORY launch
     DESTINATION share/${PROJECT_NAME}
   )

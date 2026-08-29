@@ -151,20 +151,17 @@ void HexapodGait::body_pose_callback(const geometry_msgs::msg::Pose::SharedPtr m
 
 void HexapodGait::adjust_leg_angles(LegData &leg_data)
 {
-  if (leg_data.leg_side_ == LEG_SIDE::RIGHT)
+  if (leg_data.leg_side_ == LEG_SIDE::LEFT)
   {
-    leg_data.coxa_joint_ = std::abs(M_PI / 2.0 + leg_data.coxa_joint_);
-    leg_data.femur_joint_ = std::abs(leg_data.femur_joint_ - M_PI / 2.0);
-    leg_data.tibia_joint_ = std::abs(leg_data.tibia_joint_ + M_PI / 2.0);
+    leg_data.coxa_joint_ = std::abs(M_PI - (M_PI / 2.0 + leg_data.coxa_joint_));
+    leg_data.femur_joint_ = std::abs(leg_data.femur_joint_ + M_PI / 2.0);
+    leg_data.tibia_joint_ = std::abs(leg_data.tibia_joint_ - M_PI / 2.0);//std::abs(M_PI - leg_data.tibia_joint_ - M_PI / 2.0);
   }
   else
   {
-    // leg_data.coxa_joint_ = std::abs(2 * M_PI - (-leg_data.coxa_joint_));
-    // leg_data.femur_joint_ = 2 * M_PI - std::abs(leg_data.femur_joint_ - M_PI / 2.0);
-    // leg_data.tibia_joint_ = 2 * M_PI - std::abs((leg_data.tibia_joint_ + M_PI / 2.0));
     leg_data.coxa_joint_ = std::abs(M_PI - (M_PI / 2.0 + leg_data.coxa_joint_));
     leg_data.femur_joint_ = std::abs(M_PI - leg_data.femur_joint_ - M_PI / 2.0);
-    leg_data.tibia_joint_ = std::abs(M_PI - (leg_data.tibia_joint_ + M_PI / 2.0));
+    leg_data.tibia_joint_ = M_PI - std::abs(leg_data.tibia_joint_ - M_PI / 2.0);
   }
 
   if (leg_data.coxa_joint_ > M_PI || leg_data.coxa_joint_ < 0.0) 
