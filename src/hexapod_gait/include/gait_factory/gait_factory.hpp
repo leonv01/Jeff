@@ -26,7 +26,7 @@ public:
      * @param duty_cycle Optional custom duty cycle ratio. If <= 0.0, default stance duty cycle of the strategy is used.
      * @return std::unique_ptr<GaitStrategy> Unique pointer to constructed GaitStrategy instance, or nullptr if unrecognized type.
      */
-    static std::unique_ptr<GaitStrategy> create_gait(const std::string &type, double duty_cycle = -1.0);
+    static std::unique_ptr<GaitStrategy> create_gait(const std::string &type, int total_cycle_steps = 30, double duty_cycle = -1.0);
 };
 
 } // namespace hexapod_gait

@@ -19,6 +19,8 @@ HexapodGait::HexapodGait() : rclcpp::Node("hexapod_gait_node")
 {
   step_counter_ = 0;
 
+  this->declare_parameter<int>("total_steps", 30);
+
   cmd_vel_sub_ = this->create_subscription<geometry_msgs::msg::Twist>(
     "/cmd_vel", 10,
     std::bind(&HexapodGait::cmd_vel_callback, this, std::placeholders::_1)
@@ -39,7 +41,7 @@ HexapodGait::HexapodGait() : rclcpp::Node("hexapod_gait_node")
   );
 
   const std::string default_strategy = "tripod_gait";
-  gait_strategy_ = std::move(GaitFactory::create_gait(default_strategy));
+  gait_strategy_ = std::move(GaitFactory::create_gait(default_strategy, 30));
 
   control_timer_ = this->create_wall_timer(
     std::chrono::milliseconds(CONTROL_TIMER_INTERVAL),
@@ -83,18 +85,21 @@ void HexapodGait::control_timer_callback()
   double speed = std::sqrt(vx * vx + vy * vy);
 
   double alpha = (speed > 0.001) ? std::atan2(vy, vx) : 0.0;
+  
 
-  double max_stride_length = 0.06; // 60 mm (0.06 m) max stride length
+  double max_stride_length = 0.08; // 60 mm (0.06 m) max stride length
   double stride_length = (speed > 0.001) ? std::clamp(speed * 0.5, 0.01, max_stride_length) : 0.0;
-  double swing_height = (speed > 0.001) ? 0.025 : 0.0; // 25 mm (0.025 m) swing height
+  double swing_height = (speed > 0.001) ? 0.04 : 0.0; // 25 mm (0.025 m) swing height
 
   if (speed > 0.001 || std::abs(current_velocity_.angular.z) > 0.001)
   {
-    step_counter_ = (step_counter_ + 1) % 60;
+    step_counter_ = (step_counter_ + 1) % this->get_parameter("total_steps").as_int();
     gait_strategy_->update_current_steps(step_counter_);
   }
 
-  std::unordered_map<LEG, LegData> leg_data = gait_strategy_->propagate_gait(step_counter_, stride_length, swing_height, alpha);
+  Eigen::Vector3d relative_target(0.08, 0.0, -0.08);
+
+  std::unordered_map<LEG, LegData> leg_data = gait_strategy_->propagate_gait(step_counter_, stride_length, swing_height, relative_target, alpha);
 
   auto joint_msg = sensor_msgs::msg::JointState();
   joint_msg.header.stamp = this->now();
@@ -108,22 +113,18 @@ void HexapodGait::control_timer_callback()
     { RM_LEG, { "coxa_joint", "femur_joint", "tibia_joint" } },
     { RR_LEG, { "coxa_joint_4", "femur_joint_4", "tibia_joint_4" } }
   };
-/*
-  static const std::vector<std::string> joint_names = {
-    "coxa_joint",   "femur_joint",   "tibia_joint",
-    "coxa_joint_1", "femur_joint_1", "tibia_joint_1",
-    "coxa_joint_2", "femur_joint_2", "tibia_joint_2",
-    "coxa_joint_3", "femur_joint_3", "tibia_joint_3",
-    "coxa_joint_4", "femur_joint_4", "tibia_joint_4",
-    "coxa_joint_5", "femur_joint_5", "tibia_joint_5"
-  };
-  */
+
   joint_msg.name.reserve(18);
   joint_msg.position.resize(18);
 
   static const std::array<LEG, 6> leg_order = {
     LF_LEG, LM_LEG, LR_LEG, RF_LEG, RM_LEG, RR_LEG
   };
+
+  for(auto &leg : leg_data)
+  {
+    this->adjust_leg_angles(leg.second);
+  }
 
   int idx = 0;
 
@@ -145,13 +146,34 @@ void HexapodGait::control_timer_callback()
 
 void HexapodGait::body_pose_callback(const geometry_msgs::msg::Pose::SharedPtr msg)
 {
-  double body_x = msg->position.x;
-  double body_y = msg->position.y;
-  double body_z = msg->position.z;
-  
-  
+  (void)msg;  
 }
 
+void HexapodGait::adjust_leg_angles(LegData &leg_data)
+{
+  if (leg_data.leg_side_ == LEG_SIDE::RIGHT)
+  {
+    leg_data.coxa_joint_ = std::abs(M_PI / 2.0 + leg_data.coxa_joint_);
+    leg_data.femur_joint_ = std::abs(leg_data.femur_joint_ - M_PI / 2.0);
+    leg_data.tibia_joint_ = std::abs(leg_data.tibia_joint_ + M_PI / 2.0);
+  }
+  else
+  {
+    // leg_data.coxa_joint_ = std::abs(2 * M_PI - (-leg_data.coxa_joint_));
+    // leg_data.femur_joint_ = 2 * M_PI - std::abs(leg_data.femur_joint_ - M_PI / 2.0);
+    // leg_data.tibia_joint_ = 2 * M_PI - std::abs((leg_data.tibia_joint_ + M_PI / 2.0));
+    leg_data.coxa_joint_ = std::abs(M_PI - (M_PI / 2.0 + leg_data.coxa_joint_));
+    leg_data.femur_joint_ = std::abs(M_PI - leg_data.femur_joint_ - M_PI / 2.0);
+    leg_data.tibia_joint_ = std::abs(M_PI - (leg_data.tibia_joint_ + M_PI / 2.0));
+  }
+
+  if (leg_data.coxa_joint_ > M_PI || leg_data.coxa_joint_ < 0.0) 
+    RCLCPP_WARN(this->get_logger(), "Coxa joint exceeds limits: %.2f", leg_data.coxa_joint_);
+  if (leg_data.femur_joint_ > M_PI || leg_data.femur_joint_ < 0.0) 
+    RCLCPP_WARN(this->get_logger(), "Femur joint exceeds limits: %.2f", leg_data.femur_joint_);
+  if (leg_data.tibia_joint_ > M_PI || leg_data.tibia_joint_ < 0.0) 
+    RCLCPP_WARN(this->get_logger(), "Tibia joint exceeds limits: %.2f", leg_data.tibia_joint_);
+}
 
 }
 

@@ -37,6 +37,8 @@ public:
      * @brief Constructs the HexapodGait ROS 2 node, initializing subscribers, publisher, and control timer.
      */
     HexapodGait();
+    
+    void adjust_leg_angles(LegData &leg_data);
 
 private:
     /// @brief Global gait step counter tracking phase progression across total cycle steps.
@@ -77,6 +79,7 @@ private:
      * @param msg Received Pose message representing body position/orientation target.
      */
     void body_pose_callback(const geometry_msgs::msg::Pose::SharedPtr msg);
+
 
     /// @brief Wall timer driving periodic control loop execution.
     rclcpp::TimerBase::SharedPtr control_timer_;

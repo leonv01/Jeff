@@ -13,8 +13,8 @@ find_package(geometry_msgs REQUIRED)
 find_package(std_msgs REQUIRED)
 find_package(Eigen3 REQUIRED)
 
-add_executable(hexapod_gait 
-  src/hexapod_gait.cpp 
+add_executable(hexapod_gait
+  src/hexapod_gait.cpp
   src/hexapod_ik.cpp
   src/trajectory_generator.cpp
   src/gait_strategy.cpp
@@ -22,7 +22,7 @@ add_executable(hexapod_gait
   src/riple_gait_concrete.cpp
   src/wave_gait_concrete.cpp
   src/tripod_gait_concrete.cpp
-  )
+)
 target_include_directories(hexapod_gait PUBLIC
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
   $<INSTALL_INTERFACE:include>)
@@ -41,15 +41,45 @@ install(TARGETS hexapod_gait
   DESTINATION lib/${PROJECT_NAME})
 
 if(BUILD_TESTING)
+  list(APPEND AMENT_LINT_AUTO_EXCLUDE ament_cmake_uncrustify)
+  list(APPEND AMENT_LINT_AUTO_EXCLUDE ament_cmake_copyright)
+  list(APPEND AMENT_LINT_AUTO_EXCLUDE ament_cmake_cpplint)
   find_package(ament_lint_auto REQUIRED)
-  # the following line skips the linter which checks for copyrights
-  # comment the line when a copyright and license is added to all source files
-  set(ament_cmake_copyright_FOUND TRUE)
-  # the following line skips cpplint (only works in a git repo)
-  # comment the line when this package is in a git repo and when
-  # a copyright and license is added to all source files
-  set(ament_cmake_cpplint_FOUND TRUE)
   ament_lint_auto_find_test_dependencies()
+
+  find_package(ament_cmake_gtest REQUIRED)
+  find_package(ament_index_cpp REQUIRED)
+
+  install(
+    FILES test/angle_history.csv
+    DESTINATION share/${PROJECT_NAME}/test
+  )
+
+  install(DIRECTORY launch
+    DESTINATION share/${PROJECT_NAME}
+  )
+
+  ament_add_gtest(test_leg_ik
+    test/test_leg_ik.cpp
+    src/hexapod_ik.cpp
+    src/gait_strategy.cpp
+    src/gait_factory.cpp
+    src/riple_gait_concrete.cpp
+    src/wave_gait_concrete.cpp
+    src/tripod_gait_concrete.cpp
+    src/trajectory_generator.cpp
+  )
+  target_include_directories(test_leg_ik PUBLIC
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+  )
+  target_compile_features(test_leg_ik PUBLIC cxx_std_17)
+  target_link_libraries(test_leg_ik
+    ament_index_cpp::ament_index_cpp
+    Eigen3::Eigen
+  )
+  ament_target_dependencies(test_leg_ik
+    rclcpp
+  )
 endif()
 
 ament_package()

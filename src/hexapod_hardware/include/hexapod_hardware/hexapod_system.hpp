@@ -3,12 +3,15 @@
 
 #include <memory>
 #include <vector>
+#include <string>
+#include <unordered_map>
 #include "hardware_interface/handle.hpp"
 #include "hardware_interface/hardware_info.hpp"
 #include "hardware_interface/system_interface.hpp"
 #include "hardware_interface/types/hardware_interface_return_values.hpp"
 #include "rclcpp/rclcpp.hpp"
 #include "rclcpp_lifecycle/state.hpp"
+#include "sensor_msgs/msg/joint_state.hpp"
 
 #include "hal_strategy/servo_strategy.hpp"
 
@@ -49,6 +52,10 @@ private:
     std::vector<double> hw_states_;
 
     std::unique_ptr<ServoStrategy> servo_strategy_;
+
+    rclcpp::Node::SharedPtr sub_node_;
+    rclcpp::Subscription<sensor_msgs::msg::JointState>::SharedPtr joint_cmd_sub_;
+    std::unordered_map<std::string, size_t> joint_name_to_index_;
 };
 
 }
