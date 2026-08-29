@@ -14,6 +14,7 @@ find_package(hardware_interface REQUIRED)
 find_package(pluginlib REQUIRED)
 
 find_library(PIPCA9685_LIB PiPCA9685 REQUIRED)
+find_library(I2C_LIB i2c REQUIRED)
 
 add_library(hexapod_hardware SHARED
   src/hexapod_system.cpp
@@ -34,7 +35,7 @@ ament_target_dependencies(hexapod_hardware
   pluginlib
 )
 
-target_link_libraries(hexapod_hardware ${PIPCA9685_LIB})
+target_link_libraries(hexapod_hardware ${PIPCA9685_LIB} ${I2C_LIB})
 
 pluginlib_export_plugin_description_file(hardware_interface hexapod_hardware.xml)
 
@@ -55,6 +56,9 @@ install(FILES hexapod_hardware.xml
 install(DIRECTORY launch
   DESTINATION share/${PROJECT_NAME}
 )
+
+ament_export_include_directories(include)
+ament_export_libraries(hexapod_hardware ${I2C_LIB})
 
 if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)
