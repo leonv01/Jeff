@@ -28,12 +28,18 @@
     "containerEnv": {
         "DISPLAY": "unix:0",
         "ROS_AUTOMATIC_DISCOVERY_RANGE": "LOCALHOST",
-        "ROS_DOMAIN_ID": "42"
+        "ROS_DOMAIN_ID": "42",
+        "NVIDIA_VISIBLE_DEVICES": "all",
+        "NVIDIA_DRIVER_CAPABILITIES": "all"
     },
     "runArgs": [
         "--net=host",
         "--pid=host",
         "--ipc=host",
+        "--gpus",
+        "all",
+        "--device=/dev/input",
+        "--device=/dev/i2c-1",
         "-e",
         "DISPLAY=${env:DISPLAY}"
     ],

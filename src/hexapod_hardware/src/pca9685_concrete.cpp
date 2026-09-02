@@ -40,17 +40,17 @@ void PCA9685Concrete::configure_channels(const std::vector<std::string> &joint_n
 {
     static const std::unordered_map<std::string, ServoChannelMap> joint_lookup = {
         // Left Front (LF)
-        { "coxa_joint_2",  { 0x40, 0 } }, { "femur_joint_2", { 0x40, 1 } }, { "tibia_joint_2", { 0x40, 2 } },
+        { "coxa_joint_2",  { 0x40, 15 } }, { "femur_joint_2", { 0x40, 14 } }, { "tibia_joint_2", { 0x40, 13 } },
         // Left Middle (LM)
-        { "coxa_joint_3",  { 0x40, 4 } }, { "femur_joint_3", { 0x40, 5 } }, { "tibia_joint_3", { 0x40, 6 } },
+        { "coxa_joint_3",  { 0x40, 11 } }, { "femur_joint_3", { 0x40, 10 } }, { "tibia_joint_3", { 0x40, 9 } },
         // Left Rear (LR)
-        { "coxa_joint_5",  { 0x40, 8 } }, { "femur_joint_5", { 0x40, 9 } }, { "tibia_joint_5", { 0x40, 10 } },
+        { "coxa_joint_5",  { 0x40, 7 } },  { "femur_joint_5", { 0x40, 6 } },  { "tibia_joint_5", { 0x40, 5 } },
         // Right Front (RF)
-        { "coxa_joint_1",  { 0x41, 0 } }, { "femur_joint_1", { 0x41, 1 } }, { "tibia_joint_1", { 0x41, 2 } },
+        { "coxa_joint_1",  { 0x41, 3 } },  { "femur_joint_1", { 0x41, 2 } },  { "tibia_joint_1", { 0x41, 1 } },
         // Right Middle (RM)
-        { "coxa_joint",    { 0x41, 4 } }, { "femur_joint",   { 0x41, 5 } }, { "tibia_joint",   { 0x41, 6 } },
-        // Right Rear (RR) — FIXED CHANNELS TO 12, 13, 14:
-        { "coxa_joint_4",  { 0x41, 12 } }, { "femur_joint_4", { 0x41, 13 } }, { "tibia_joint_4", { 0x41, 14 } }
+        { "coxa_joint",    { 0x41, 11 } }, { "femur_joint",   { 0x41, 10 } }, { "tibia_joint",   { 0x41, 9 } },
+        // Right Rear (RR)
+        { "coxa_joint_4",  { 0x41, 15 } }, { "femur_joint_4", { 0x41, 14 } }, { "tibia_joint_4", { 0x41, 13 } }
     };
 
     channel_mapping_.resize(joint_names.size());

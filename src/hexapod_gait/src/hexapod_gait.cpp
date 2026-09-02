@@ -164,7 +164,7 @@ void HexapodGait::adjust_leg_angles(LegData &leg_data)
     leg_data.tibia_joint_ = M_PI - std::abs(leg_data.tibia_joint_ - M_PI / 2.0);
   }
 
-  leg_data.coxa_joint = std::clamp(leg_data.coxa_joint, 0.0, M_PI);
+  leg_data.coxa_joint_ = std::clamp(leg_data.coxa_joint_, 0.0, M_PI);
   leg_data.femur_joint_ = std::clamp(leg_data.femur_joint_, 0.0, M_PI);
   leg_data.tibia_joint_ = std::clamp(leg_data.tibia_joint_, 0.0, M_PI);
 }
