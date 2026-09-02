@@ -25,7 +25,7 @@ PCA9685Concrete::PCA9685Concrete(std::vector<unsigned int> ids_)
         // Right Front (RF)
         { 0x41, 3 }, { 0x41, 2 }, { 0x41, 1 },
         // Right Middle (RM)
-        { 0x41, 11 }, { 0x41, 10 }, { 0x41, 9 },
+        { 0x41, 7 }, { 0x41, 6 }, { 0x41, 5 },
         // Right Rear (RR)
         { 0x41, 15 }, { 0x41, 14 }, { 0x41, 13 }
     };
@@ -48,7 +48,7 @@ void PCA9685Concrete::configure_channels(const std::vector<std::string> &joint_n
         // Right Front (RF)
         { "coxa_joint_1",  { 0x41, 3 } },  { "femur_joint_1", { 0x41, 2 } },  { "tibia_joint_1", { 0x41, 1 } },
         // Right Middle (RM)
-        { "coxa_joint",    { 0x41, 11 } }, { "femur_joint",   { 0x41, 10 } }, { "tibia_joint",   { 0x41, 9 } },
+        { "coxa_joint",    { 0x41, 7 } },  { "femur_joint",   { 0x41, 6 } },  { "tibia_joint",   { 0x41, 5 } },
         // Right Rear (RR)
         { "coxa_joint_4",  { 0x41, 15 } }, { "femur_joint_4", { 0x41, 14 } }, { "tibia_joint_4", { 0x41, 13 } }
     };
