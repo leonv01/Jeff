@@ -17,17 +17,17 @@ PCA9685Concrete::PCA9685Concrete(std::vector<unsigned int> ids_)
 
     channel_mapping_ = {
         // Left Front (LF)
-        { 0x40, 0 }, { 0x40, 1 }, { 0x40, 2 },
+        { 0x40, 15 }, { 0x40, 14 }, { 0x40, 13 },
         // Left Middle (LM)
-        { 0x40, 4 }, { 0x40, 5 }, { 0x40, 6 },
+        { 0x40, 11 }, { 0x40, 10 }, { 0x40, 9 },
         // Left Rear (LR)
-        { 0x40, 8 }, { 0x40, 9 }, { 0x40, 10 },
+        { 0x40, 7 }, { 0x40, 6 }, { 0x40, 5 },
         // Right Front (RF)
-        { 0x41, 0 }, { 0x41, 1 }, { 0x41, 2 },
+        { 0x41, 3 }, { 0x41, 2 }, { 0x41, 1 },
         // Right Middle (RM)
-        { 0x41, 4 }, { 0x41, 5 }, { 0x41, 6 },
+        { 0x41, 11 }, { 0x41, 10 }, { 0x41, 9 },
         // Right Rear (RR)
-        { 0x41, 12 }, { 0x41, 13 }, { 0x41, 14 }
+        { 0x41, 15 }, { 0x41, 14 }, { 0x41, 13 }
     };
 }
 

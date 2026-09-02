@@ -131,14 +131,14 @@ void HexapodGait::control_timer_callback()
   for (auto leg : leg_order)
   {
     const auto &names = joint_names.at(leg);
-    joint_msg.name.push_back(names.coxa_joint_);
-    joint_msg.name.push_back(names.femur_joint_);
     joint_msg.name.push_back(names.tibia_joint_);
+    joint_msg.name.push_back(names.femur_joint_);
+    joint_msg.name.push_back(names.coxa_joint_);
 
     const LegData &data = leg_data[leg];
-    joint_msg.position[idx++] = data.coxa_joint_;
-    joint_msg.position[idx++] = data.femur_joint_;
     joint_msg.position[idx++] = data.tibia_joint_;
+    joint_msg.position[idx++] = data.femur_joint_;
+    joint_msg.position[idx++] = data.coxa_joint_;
   }
 
   joint_state_pub_->publish(joint_msg);
