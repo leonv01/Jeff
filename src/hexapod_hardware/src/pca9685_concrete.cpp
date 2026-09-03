@@ -11,8 +11,16 @@ PCA9685Concrete::PCA9685Concrete(std::vector<unsigned int> ids_)
 
     for (auto id : ids_)
     {
-        pcas_[id] = std::make_unique<PiPCA9685::PCA9685>(device, id);
-        pcas_[id]->set_pwm_freq(FREQUENCY_);
+        try
+        {
+            auto pca = std::make_unique<PiPCA9685::PCA9685>(device, id);
+            pca->set_pwm_freq(FREQUENCY_);
+            pcas_[id] = std::move(pca);
+        }
+        catch (const std::exception &e)
+        {
+            fprintf(stderr, "[PCA9685Concrete] WARNING: Could not connect to PCA9685 board at 0x%02X: %s\n", id, e.what());
+        }
     }
 
     channel_mapping_ = {
@@ -70,8 +78,19 @@ void PCA9685Concrete::set_angle_rad(ServoCommand &servo_command)
 
     const auto &target = channel_mapping_[servo_command.leg];
 
-    unsigned int pwm_tick = rad_to_pwm(servo_command.angle);
-    pcas_[target.address]->set_pwm(target.channel, 0, pwm_tick);    
+    auto it = pcas_.find(target.address);
+    if (it != pcas_.end() && it->second != nullptr)
+    {
+        try
+        {
+            unsigned int pwm_tick = rad_to_pwm(servo_command.angle);
+            it->second->set_pwm(target.channel, 0, pwm_tick);
+        }
+        catch (const std::exception &e)
+        {
+            // Silently swallow or log write errors so the node stays running
+        }
+    }   
 }
 
 void PCA9685Concrete::set_angle_degree(ServoCommand &servo_command) 
