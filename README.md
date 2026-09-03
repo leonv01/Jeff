@@ -52,7 +52,24 @@ colcon build --packages-select <package_name>
 
 ## How to Run
 
-### 1. Visualize Robot Model in RViz
+### 1. Single-Command Master Bringup (Recommended)
+
+To launch the complete Hexapod system (Servo Driver, Gait/IK Generator, Teleop, and Gamepad driver) with a single command:
+
+```bash
+source /opt/ros/humble/setup.bash
+source install/setup.bash
+
+# Real hardware execution on Raspberry Pi:
+ros2 launch hexapod_servo_driver bringup.launch.py
+
+# Simulation / Mock hardware dry-run:
+ros2 launch hexapod_servo_driver bringup.launch.py hardware_type:=mock
+```
+
+---
+
+### 2. Visualize Robot Model in RViz
 
 To launch RViz with joint slider GUI controls:
 
