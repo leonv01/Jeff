@@ -20,6 +20,7 @@ HexapodGait::HexapodGait() : rclcpp::Node("hexapod_gait_node")
   step_counter_ = 0;
 
   this->declare_parameter<int>("total_steps", 30);
+  int total_steps = this->get_parameter("total_steps").as_int();
 
   cmd_vel_sub_ = this->create_subscription<geometry_msgs::msg::Twist>(
     "/cmd_vel", 10,
@@ -41,14 +42,14 @@ HexapodGait::HexapodGait() : rclcpp::Node("hexapod_gait_node")
   );
 
   const std::string default_strategy = "tripod_gait";
-  gait_strategy_ = std::move(GaitFactory::create_gait(default_strategy, 30));
+  gait_strategy_ = std::move(GaitFactory::create_gait(default_strategy, total_steps));
 
   control_timer_ = this->create_wall_timer(
     std::chrono::milliseconds(CONTROL_TIMER_INTERVAL),
     std::bind(&HexapodGait::control_timer_callback, this)
   );
 
-  RCLCPP_INFO(this->get_logger(), "Hexapod Gait Node initialized listening to /cmd_vel and /gait_mode");
+  RCLCPP_INFO(this->get_logger(), "Hexapod Gait Node initialized with total_steps=%d", total_steps);
 }
 
 void HexapodGait::cmd_vel_callback(const geometry_msgs::msg::Twist::SharedPtr msg)
@@ -59,13 +60,14 @@ void HexapodGait::cmd_vel_callback(const geometry_msgs::msg::Twist::SharedPtr ms
 void HexapodGait::gait_mode_callback(const std_msgs::msg::String::SharedPtr msg)
 {
   const std::string new_gait = msg->data;
+  int total_steps = this->get_parameter("total_steps").as_int();
 
-  auto strategy = GaitFactory::create_gait(new_gait);
+  auto strategy = GaitFactory::create_gait(new_gait, total_steps);
 
   if (strategy != nullptr)
   {
     gait_strategy_ = std::move(strategy);
-    RCLCPP_INFO(this->get_logger(), "Switched gait strategy to: %s", new_gait.c_str());
+    RCLCPP_INFO(this->get_logger(), "Switched gait strategy to: %s (total_steps=%d)", new_gait.c_str(), total_steps);
   }
   else
   {
