@@ -1,5 +1,7 @@
 FROM ros:humble-ros-base
 
+ARG ROS_DISTRO=humble
+
 ARG USERNAME=leonv
 ARG USER_UID=1000
 ARG USER_GID=$USER_UID
@@ -27,16 +29,20 @@ RUN apt-get update && apt-get install -y \
     python3-pip \
     python3-rosdep \
     python3-colcon-common-extensions \
-    ros-humble-joy \
-    && rm -rf /var/lib/apt/lists/*
-
-RUN apt-get update && apt-get install -y \
-    ros-humble-ros2-control \
-    ros-humble-ros2-controllers \
+    ros-$ROS_DISTRO-joy \
+    ros-$ROS_DISTRO-ros2-control \
+    ros-$ROS_DISTRO-ros2-controllers \
+    ros-$ROS_DISTRO-rosbridge-suite \
     && rm -rf /var/lib/apt/lists/*
 
 # Install modern CMake for PiPCA9685 compatibility
 RUN pip3 install --no-cache-dir cmake
+
+# Install libraries for INA3221
+RUN pip3 install --no-cache-dir adafruit-circuitpython-ina3221 adafruit-blinka
+
+# Install libraries for MPU6500
+RUN pip3 install --no-cache-dir smbus2
 
 # Build and install PiPCA9685 library
 WORKDIR /opt

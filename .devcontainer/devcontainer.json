@@ -28,24 +28,19 @@
     "containerEnv": {
         "DISPLAY": "unix:0",
         "ROS_AUTOMATIC_DISCOVERY_RANGE": "LOCALHOST",
-        "ROS_DOMAIN_ID": "42",
-        "NVIDIA_VISIBLE_DEVICES": "all",
-        "NVIDIA_DRIVER_CAPABILITIES": "all"
+        "ROS_DOMAIN_ID": "42"
     },
     "runArgs": [
         "--net=host",
         "--pid=host",
         "--ipc=host",
-        "--gpus",
-        "all",
         "--device=/dev/input",
         "--device=/dev/i2c-1",
         "-e",
         "DISPLAY=${env:DISPLAY}"
     ],
     "mounts": [
-        "source=/tmp/.X11-unix,target=/tmp/.X11-unix,type=bind,consistency=cached",
-        "source=/dev/dri,target=/dev/dri,type=bind,consistency=cached"
+        "source=/tmp/.X11-unix,target=/tmp/.X11-unix,type=bind,consistency=cached"
     ],
     "postCreateCommand": "sudo rosdep update && (sudo rosdep install --from-paths src --ignore-src -y || true) && sudo chown -R $(whoami) /home/ws/"
 }

@@ -40,6 +40,10 @@ ament_target_dependencies(hexapod_gait
 install(TARGETS hexapod_gait
   DESTINATION lib/${PROJECT_NAME})
 
+install(DIRECTORY launch
+  DESTINATION share/${PROJECT_NAME}
+)
+
 if(BUILD_TESTING)
   list(APPEND AMENT_LINT_AUTO_EXCLUDE ament_cmake_uncrustify)
   list(APPEND AMENT_LINT_AUTO_EXCLUDE ament_cmake_copyright)
@@ -49,10 +53,6 @@ if(BUILD_TESTING)
 
   find_package(ament_cmake_gtest REQUIRED)
   find_package(ament_index_cpp REQUIRED)
-
-  install(DIRECTORY launch
-    DESTINATION share/${PROJECT_NAME}
-  )
 
   ament_add_gtest(test_leg_ik
     test/test_leg_ik.cpp

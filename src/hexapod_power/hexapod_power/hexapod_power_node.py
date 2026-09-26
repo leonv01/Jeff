@@ -70,6 +70,10 @@ class HexapodPowerNode(Node):
         batt_msg.power_supply_status = BatteryState.POWER_SUPPLY_STATUS_DISCHARGING
         batt_msg.present = True
         
+        # Populate per-cell voltages to transmit cell count to ROS 2 subscribers
+        cell_v = float(ch1.bus_voltage / self.battery_type.num_cells) if self.battery_type.num_cells > 0 else float(ch1.bus_voltage)
+        batt_msg.cell_voltage = [cell_v] * self.battery_type.num_cells
+        
         self.batt_pub.publish(batt_msg)
         self.get_logger().info(f"Battery: {ch1.bus_voltage:.2f}V, Current: {ch1.current:.2f}A, Soc: {batt_msg.percentage*100:.1f}%")
 

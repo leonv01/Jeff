@@ -20,6 +20,12 @@ HexapodGait::HexapodGait() : rclcpp::Node("hexapod_gait_node")
   step_counter_ = 0;
 
   this->declare_parameter<int>("total_steps", 30);
+  this->declare_parameter<double>("max_stride_length", 0.08);
+  this->declare_parameter<double>("speed_factor", 0.5);
+  this->declare_parameter<double>("speed_increment", 0.1);
+  this->declare_parameter<double>("step_distance", 0.08);
+  this->declare_parameter<double>("step_depth", -0.8);
+
   int total_steps = this->get_parameter("total_steps").as_int();
 
   cmd_vel_sub_ = this->create_subscription<geometry_msgs::msg::Twist>(
@@ -82,15 +88,19 @@ void HexapodGait::control_timer_callback()
     return;
   }
 
+  double max_stride_length = this->get_parameter("max_stride_length").as_double();
+  double speed_factor = this->get_parameter("speed_factor").as_double();
+  double speed_increment = this->get_parameter("speed_increment").as_double();
+  double step_distance = this->get_parameter("step_distance").as_double();
+  double step_depth = this->get_parameter("step_depth").as_double();
+
   double vx = current_velocity_.linear.x;
   double vy = current_velocity_.linear.y;
   double speed = std::sqrt(vx * vx + vy * vy);
 
   double alpha = (speed > 0.001) ? std::atan2(vy, vx) : 0.0;
   
-
-  double max_stride_length = 0.08; // 60 mm (0.06 m) max stride length
-  double stride_length = (speed > 0.001) ? std::clamp(speed * 0.5, 0.01, max_stride_length) : 0.0;
+  double stride_length = (speed > 0.001) ? std::clamp(speed * speed_factor, speed_increment, max_stride_length) : 0.0;
   double swing_height = (speed > 0.001) ? 0.06 : 0.0; // 25 mm (0.025 m) swing height
 
   if (speed > 0.001 || std::abs(current_velocity_.angular.z) > 0.001)
@@ -99,7 +109,7 @@ void HexapodGait::control_timer_callback()
     gait_strategy_->update_current_steps(step_counter_);
   }
 
-  Eigen::Vector3d relative_target(0.08, 0.0, -0.08);
+  Eigen::Vector3d relative_target(step_distance, 0.0, step_depth);
 
   std::unordered_map<LEG, LegData> leg_data = gait_strategy_->propagate_gait(step_counter_, stride_length, swing_height, relative_target, alpha);
 
