@@ -37,3 +37,5 @@ scratch/
 
 # Ignore proprietary robot description package (CAD files)
 src/hexapod_description/
+
+.vscode

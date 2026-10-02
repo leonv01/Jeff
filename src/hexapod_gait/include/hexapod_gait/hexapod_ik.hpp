@@ -25,14 +25,14 @@ public:
     static Eigen::Vector3d solve_ik(const Eigen::Vector3d &target);
 
 private:
-    /// @brief Coxa link length in meters (distance from coxa axis to femur axis: 52.0 mm).
-    static constexpr double COXA_LENGTH = 0.052;
+    /// @brief Coxa link length in meters (distance from coxa axis to femur axis: 40.0 mm).
+    static constexpr double COXA_LENGTH = 0.040;
 
-    /// @brief Femur link length in meters (75.208 mm).
-    static constexpr double FEMUR_LENGTH = 0.075208;
+    /// @brief Femur link length in meters (69.50804 mm).
+    static constexpr double FEMUR_LENGTH = 0.06950804;
 
-    /// @brief Tibia link length in meters (98.265 mm).
-    static constexpr double TIBIA_LENGTH = 0.098265;
+    /// @brief Tibia link length in meters (112.09523 mm).
+    static constexpr double TIBIA_LENGTH = 0.11209523;
 };
 
 } // namespace hexapod_gait

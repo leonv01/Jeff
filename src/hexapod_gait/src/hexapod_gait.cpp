@@ -20,10 +20,11 @@ HexapodGait::HexapodGait() : rclcpp::Node("hexapod_gait_node")
   step_counter_ = 0;
 
   this->declare_parameter<int>("total_steps", 30);
-  this->declare_parameter<double>("max_stride_length", 0.08);
+  this->declare_parameter<double>("max_stride_length", 0.080);
+  this->declare_parameter<double>("swing_height", 0.040);
   this->declare_parameter<double>("speed_factor", 0.5);
   this->declare_parameter<double>("speed_increment", 0.1);
-  this->declare_parameter<double>("step_distance", 0.08);
+  this->declare_parameter<double>("step_distance", 0.130);
   this->declare_parameter<double>("step_depth", -0.8);
 
   int total_steps = this->get_parameter("total_steps").as_int();
@@ -93,6 +94,7 @@ void HexapodGait::control_timer_callback()
   double speed_increment = this->get_parameter("speed_increment").as_double();
   double step_distance = this->get_parameter("step_distance").as_double();
   double step_depth = this->get_parameter("step_depth").as_double();
+  double swing_height = this->get_parameter("swing_height").as_double();
 
   double vx = current_velocity_.linear.x;
   double vy = current_velocity_.linear.y;
@@ -101,7 +103,7 @@ void HexapodGait::control_timer_callback()
   double alpha = (speed > 0.001) ? std::atan2(vy, vx) : 0.0;
   
   double stride_length = (speed > 0.001) ? std::clamp(speed * speed_factor, speed_increment, max_stride_length) : 0.0;
-  double swing_height = (speed > 0.001) ? 0.06 : 0.0; // 25 mm (0.025 m) swing height
+  swing_height = (speed > 0.001) ? swing_height : 0.0; 
 
   if (speed > 0.001 || std::abs(current_velocity_.angular.z) > 0.001)
   {
@@ -118,12 +120,12 @@ void HexapodGait::control_timer_callback()
 
   static const std::unordered_map<LEG, LEG_NAMING_MAP> joint_names = 
   {
-    { LR_LEG, { "coxa_joint_5", "femur_joint_5", "tibia_joint_5" } },
-    { LM_LEG, { "coxa_joint_3", "femur_joint_3", "tibia_joint_3" } },
-    { LF_LEG, { "coxa_joint_2", "femur_joint_2", "tibia_joint_2" } },
-    { RF_LEG, { "coxa_joint_1", "femur_joint_1", "tibia_joint_1" } },
-    { RM_LEG, { "coxa_joint", "femur_joint", "tibia_joint" } },
-    { RR_LEG, { "coxa_joint_4", "femur_joint_4", "tibia_joint_4" } }
+    { LR_LEG, { "coxa_joint_5", "femur_joint_5",  "tibia_joint_5" } },
+    { LM_LEG, { "coxa_joint_3", "femur_joint_3",  "tibia_joint_3" } },
+    { LF_LEG, { "coxa_joint_2", "femur_joint_2",  "tibia_joint_2" } },
+    { RF_LEG, { "coxa_joint_1", "femur_joint_1",  "tibia_joint_1" } },
+    { RM_LEG, { "coxa_joint",   "femur_joint",    "tibia_joint" } },
+    { RR_LEG, { "coxa_joint_4", "femur_joint_4",  "tibia_joint_4" } }
   };
 
   joint_msg.name.reserve(18);
