@@ -12,7 +12,7 @@ services:
       - "/dev/input:/dev/input"
     environment:
       - ROS_DOMAIN_ID=42
-      - ROS_AUTOMATIC_DISCOVERY_RANGE=LOCALHOST
+      - ROS_AUTOMATIC_DISCOVERY_RANGE=SUBNET
       - DISPLAY=${DISPLAY:-:0}
     volumes:
       - .:/home/ws
