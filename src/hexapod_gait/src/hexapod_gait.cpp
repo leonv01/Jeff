@@ -24,8 +24,8 @@ HexapodGait::HexapodGait() : rclcpp::Node("hexapod_gait_node")
   this->declare_parameter<double>("swing_height", 0.040);
   this->declare_parameter<double>("speed_factor", 0.5);
   this->declare_parameter<double>("speed_increment", 0.1);
-  this->declare_parameter<double>("step_distance", 0.130);
-  this->declare_parameter<double>("step_depth", -0.8);
+  this->declare_parameter<double>("step_distance", 0.110);
+  this->declare_parameter<double>("step_depth", -0.08);
 
   int total_steps = this->get_parameter("total_steps").as_int();
 
@@ -123,9 +123,9 @@ void HexapodGait::control_timer_callback()
     { LR_LEG, { "coxa_joint_5", "femur_joint_5",  "tibia_joint_5" } },
     { LM_LEG, { "coxa_joint_3", "femur_joint_3",  "tibia_joint_3" } },
     { LF_LEG, { "coxa_joint_2", "femur_joint_2",  "tibia_joint_2" } },
-    { RF_LEG, { "coxa_joint_1", "femur_joint_1",  "tibia_joint_1" } },
+    { RR_LEG, { "coxa_joint_4", "femur_joint_4",  "tibia_joint_4" } },
     { RM_LEG, { "coxa_joint",   "femur_joint",    "tibia_joint" } },
-    { RR_LEG, { "coxa_joint_4", "femur_joint_4",  "tibia_joint_4" } }
+    { RF_LEG, { "coxa_joint_1", "femur_joint_1",  "tibia_joint_1" } }
   };
 
   joint_msg.name.reserve(18);
@@ -169,18 +169,18 @@ void HexapodGait::adjust_leg_angles(LegData &leg_data)
   {
     leg_data.coxa_joint_ = std::abs(M_PI - (M_PI / 2.0 + leg_data.coxa_joint_));
     leg_data.femur_joint_ = std::abs(leg_data.femur_joint_ + M_PI / 2.0);
-    leg_data.tibia_joint_ = std::abs(leg_data.tibia_joint_ - M_PI / 2.0);//std::abs(M_PI - leg_data.tibia_joint_ - M_PI / 2.0);
+    leg_data.tibia_joint_ = std::abs(leg_data.tibia_joint_);
   }
   else
   {
     leg_data.coxa_joint_ = std::abs(M_PI - (M_PI / 2.0 + leg_data.coxa_joint_));
     leg_data.femur_joint_ = std::abs(M_PI - leg_data.femur_joint_ - M_PI / 2.0);
-    leg_data.tibia_joint_ = M_PI - std::abs(leg_data.tibia_joint_ - M_PI / 2.0);
+    leg_data.tibia_joint_ = M_PI - std::abs(leg_data.tibia_joint_);
   }
 
   leg_data.coxa_joint_ = std::clamp(leg_data.coxa_joint_, 0.0, M_PI);
   leg_data.femur_joint_ = std::clamp(leg_data.femur_joint_, 0.0, M_PI);
-  leg_data.tibia_joint_ = std::clamp(leg_data.tibia_joint_, 0.0, M_PI);
+  leg_data.tibia_joint_ = std::clamp(leg_data.tibia_joint_, 0.0, M_PI - 1/4 * M_PI);
 }
 
 }

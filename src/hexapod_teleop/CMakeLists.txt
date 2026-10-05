@@ -26,6 +26,11 @@ ament_target_dependencies(hexapod_teleop
 install(TARGETS hexapod_teleop
   DESTINATION lib/${PROJECT_NAME})
 
+install(PROGRAMS
+  scripts/hexapod_teleop_keyboard.py
+  DESTINATION lib/${PROJECT_NAME}
+)
+
 install(DIRECTORY config
   DESTINATION share/${PROJECT_NAME}
 )
