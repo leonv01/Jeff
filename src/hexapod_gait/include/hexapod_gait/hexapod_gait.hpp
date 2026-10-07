@@ -11,6 +11,7 @@
 #include "hexapod_gait/hexapod_ik.hpp"
 
 #include "gait_strategy/gait_strategy.hpp"
+#include "phase_sm/phase_sm.hpp"
 
 #include <geometry_msgs/msg/twist.hpp>
 #include <geometry_msgs/msg/pose.hpp>
@@ -61,6 +62,8 @@ private:
 
     /// @brief Publisher for output joint states of all 6 legs (18 joints total).
     rclcpp::Publisher<sensor_msgs::msg::JointState>::SharedPtr joint_state_pub_;
+
+    HexapodPhaseSM phase_sm_;
 
     /**
      * @brief Callback function for processing incoming velocity commands.

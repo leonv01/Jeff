@@ -27,6 +27,8 @@ HexapodGait::HexapodGait() : rclcpp::Node("hexapod_gait_node")
   this->declare_parameter<double>("step_distance", 0.110);
   this->declare_parameter<double>("step_depth", -0.08);
 
+  phase_sm_ = HexapodPhaseSM();
+
   int total_steps = this->get_parameter("total_steps").as_int();
 
   cmd_vel_sub_ = this->create_subscription<geometry_msgs::msg::Twist>(
@@ -67,6 +69,14 @@ void HexapodGait::cmd_vel_callback(const geometry_msgs::msg::Twist::SharedPtr ms
 void HexapodGait::gait_mode_callback(const std_msgs::msg::String::SharedPtr msg)
 {
   const std::string new_gait = msg->data;
+
+  if (new_gait == "toggle_stand_sit")
+  {
+    phase_sm_.toggle_stand_sit();
+
+    return;
+  } 
+
   int total_steps = this->get_parameter("total_steps").as_int();
 
   auto strategy = GaitFactory::create_gait(new_gait, total_steps);
@@ -89,32 +99,49 @@ void HexapodGait::control_timer_callback()
     return;
   }
 
-  double max_stride_length = this->get_parameter("max_stride_length").as_double();
-  double speed_factor = this->get_parameter("speed_factor").as_double();
-  double speed_increment = this->get_parameter("speed_increment").as_double();
-  double step_distance = this->get_parameter("step_distance").as_double();
-  double step_depth = this->get_parameter("step_depth").as_double();
-  double swing_height = this->get_parameter("swing_height").as_double();
+  double dt = CONTROL_TIMER_INTERVAL / 1000.0;
 
   double vx = current_velocity_.linear.x;
   double vy = current_velocity_.linear.y;
   double speed = std::sqrt(vx * vx + vy * vy);
+  bool has_velocity = (speed > 0.001 || std::abs(current_velocity_.angular.z) > 0.001);
 
-  double alpha = (speed > 0.001) ? std::atan2(vy, vx) : 0.0;
+  /* -------------------------- Update state machine -------------------------- */
+  phase_sm_.update(dt, has_velocity);
+
+  /* ------------------------ Calculate desired height ------------------------ */
+  double standing_depth = this->get_parameter("step_depth").as_double();
+  const double sitting_depth = 0.000;
+  double height_factor = phase_sm_.get_height_factor();
+
+  double current_depth = sitting_depth + height_factor * (standing_depth - sitting_depth);
+
+  /* ---------- Handling walking cycle only if the robot should walk ---------- */
+  double max_stride_length = this->get_parameter("max_stride_length").as_double();
+  double speed_factor = this->get_parameter("speed_factor").as_double();
+  double speed_increment = this->get_parameter("speed_increment").as_double();
+  double swing_height = this->get_parameter("swing_height").as_double();
+
+  bool is_walking = phase_sm_.can_walk();
+  double stride_length = (is_walking) ? std::clamp(speed * speed_factor, speed_increment, max_stride_length) : 0.0;
+  swing_height = (is_walking) ? swing_height : 0.0;
   
-  double stride_length = (speed > 0.001) ? std::clamp(speed * speed_factor, speed_increment, max_stride_length) : 0.0;
-  swing_height = (speed > 0.001) ? swing_height : 0.0; 
-
-  if (speed > 0.001 || std::abs(current_velocity_.angular.z) > 0.001)
+  if (is_walking)
   {
     step_counter_ = (step_counter_ + 1) % this->get_parameter("total_steps").as_int();
     gait_strategy_->update_current_steps(step_counter_);
   }
 
-  Eigen::Vector3d relative_target(step_distance, 0.0, step_depth);
+  /* ---------------------------- Generate targets ---------------------------- */
+  double step_distance = this->get_parameter("step_distance").as_double();
+
+  double alpha = (speed > 0.001) ? std::atan2(vy, vx) : 0.0;
+
+  Eigen::Vector3d relative_target(step_distance, 0.0, current_depth);
 
   std::unordered_map<LEG, LegData> leg_data = gait_strategy_->propagate_gait(step_counter_, stride_length, swing_height, relative_target, alpha);
 
+  /* ----------------------------- Prepare message ---------------------------- */
   auto joint_msg = sensor_msgs::msg::JointState();
   joint_msg.header.stamp = this->now();
 
@@ -155,6 +182,7 @@ void HexapodGait::control_timer_callback()
     joint_msg.position[idx++] = data.coxa_joint_;
   }
 
+  /* ----------------------------- Publish message ---------------------------- */
   joint_state_pub_->publish(joint_msg);
 }
 
