@@ -120,9 +120,9 @@ void HexapodGait::control_timer_callback()
 
   static const std::unordered_map<LEG, LEG_NAMING_MAP> joint_names = 
   {
-    { LR_LEG, { "coxa_joint_5", "femur_joint_5",  "tibia_joint_5" } },
+    { LF_LEG, { "coxa_joint_5", "femur_joint_5",  "tibia_joint_5" } },
     { LM_LEG, { "coxa_joint_3", "femur_joint_3",  "tibia_joint_3" } },
-    { LF_LEG, { "coxa_joint_2", "femur_joint_2",  "tibia_joint_2" } },
+    { LR_LEG, { "coxa_joint_2", "femur_joint_2",  "tibia_joint_2" } },
     { RR_LEG, { "coxa_joint_4", "femur_joint_4",  "tibia_joint_4" } },
     { RM_LEG, { "coxa_joint",   "femur_joint",    "tibia_joint" } },
     { RF_LEG, { "coxa_joint_1", "femur_joint_1",  "tibia_joint_1" } }
