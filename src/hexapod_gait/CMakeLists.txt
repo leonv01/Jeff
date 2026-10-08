@@ -26,6 +26,7 @@ add_executable(hexapod_gait
   src/movement_factory.cpp
   src/holonomic_movement_concrete.cpp
   src/non_holonomic_movement_concrete.cpp
+  src/movement_sm.cpp
 )
 target_include_directories(hexapod_gait PUBLIC
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
@@ -71,6 +72,7 @@ if(BUILD_TESTING)
     src/movement_factory.cpp
     src/holonomic_movement_concrete.cpp
     src/non_holonomic_movement_concrete.cpp
+    src/movement_sm.cpp
   )
   target_include_directories(test_leg_ik PUBLIC
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>

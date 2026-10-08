@@ -13,7 +13,7 @@ std::unique_ptr<MovementStrategy> MovementFactory::create_movement(const std::st
     {
         return std::make_unique<HolonomicMovementConcrete>();
     }
-    else if (type == "non-holonmic")
+    else if (type == "non-holonomic")
     {
         return std::make_unique<NonHolonomicMovementConcrete>();
     }

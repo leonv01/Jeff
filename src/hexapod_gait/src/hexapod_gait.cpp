@@ -28,10 +28,6 @@ HexapodGait::HexapodGait() : rclcpp::Node("hexapod_gait_node")
   this->declare_parameter<double>("step_distance", 0.110);
   this->declare_parameter<double>("step_depth", -0.08);
 
-  phase_sm_ = HexapodPhaseSM();
-
-  movement_strategy_ = MovementFactory::create_movement("holonomic");
-
   int total_steps = this->get_parameter("total_steps").as_int();
 
   cmd_vel_sub_ = this->create_subscription<geometry_msgs::msg::Twist>(
@@ -79,6 +75,13 @@ void HexapodGait::gait_mode_callback(const std_msgs::msg::String::SharedPtr msg)
 
     return;
   } 
+
+  if (new_gait == "toggle_movement")
+  {
+    movement_sm_.toggle_movement();
+
+    return;
+  }
 
   int total_steps = this->get_parameter("total_steps").as_int();
 
@@ -138,7 +141,7 @@ void HexapodGait::control_timer_callback()
   /* ---------------------------- Generate targets ---------------------------- */
   double step_distance = this->get_parameter("step_distance").as_double();
 
-  double alpha = movement_strategy_->CalculateMovementAngle(dt, vx, vy);
+  double alpha = movement_sm_.get_movement_strategy()->CalculateMovementAngle(dt, vx, vy);
 
   Eigen::Vector3d relative_target(step_distance, 0.0, current_depth);
 

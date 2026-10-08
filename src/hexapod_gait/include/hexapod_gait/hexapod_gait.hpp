@@ -12,7 +12,7 @@
 
 #include "gait_strategy/gait_strategy.hpp"
 #include "phase_sm/phase_sm.hpp"
-#include "movement_strategy/movement_strategy.hpp"
+#include "movement_sm/movement_sm.hpp"
 
 #include <geometry_msgs/msg/twist.hpp>
 #include <geometry_msgs/msg/pose.hpp>
@@ -66,7 +66,7 @@ private:
 
     HexapodPhaseSM phase_sm_;
 
-    std::unique_ptr<MovementStrategy> movement_strategy_;
+    MovementSM movement_sm_;
 
     /**
      * @brief Callback function for processing incoming velocity commands.

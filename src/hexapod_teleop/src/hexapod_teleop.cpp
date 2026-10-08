@@ -10,6 +10,7 @@ HexapodTeleop::HexapodTeleop() : rclcpp::Node("hexapod_teleop_node")
   this->declare_parameter<int>("buttons.wave_gait", 3); 
   this->declare_parameter<int>("buttons.toggle_pose_mode", 2);
   this->declare_parameter<int>("buttons.stand_sit_toggle", 9);
+  this->declare_parameter<int>("buttons.movement_toggle", 8);
 
   this->declare_parameter<int>("axes.linear_x", 1);
   this->declare_parameter<int>("axes.linear_y", 0);
@@ -65,6 +66,7 @@ void HexapodTeleop::JoySubscriber(const sensor_msgs::msg::Joy::SharedPtr msg)
   else if (is_button_pressed(msg, "buttons.ripple_gait")) gait_mode = "ripple_gait";
   else if (is_button_pressed(msg, "buttons.toggle_pose_mode")) gait_mode = "toggle_pose";
   else if (is_button_pressed(msg, "buttons.stand_sit_toggle")) gait_mode = "stand_sit_toggle";
+  else if (is_button_pressed(msg, "movement_toggle")) gait_mode = "movement_toggle";
 
   if (gait_mode.empty() == false)
   {

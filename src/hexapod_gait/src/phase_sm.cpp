@@ -66,7 +66,7 @@ double HexapodPhaseSM::get_height_factor(void) const
     return (1.0 - std::cos(p * M_PI)) / 2.0;
 }
 
-HexapodPhaseSM &HexapodPhaseSM::getInstance()
+HexapodPhaseSM &HexapodPhaseSM::get_instance()
 {
     static HexapodPhaseSM obj;
     return obj;

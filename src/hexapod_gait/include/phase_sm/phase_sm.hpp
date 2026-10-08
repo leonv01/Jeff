@@ -21,7 +21,7 @@ private:
     double progress_;
 
 public:
-    static HexapodPhaseSM &getInstance();
+    static HexapodPhaseSM &get_instance();
 
     HexapodPhaseSM(double transition_duration = 2.5) : 
         current_phase_(RobotPhase::SITTING),
