@@ -12,6 +12,7 @@
 
 #include "gait_strategy/gait_strategy.hpp"
 #include "phase_sm/phase_sm.hpp"
+#include "movement_strategy/movement_strategy.hpp"
 
 #include <geometry_msgs/msg/twist.hpp>
 #include <geometry_msgs/msg/pose.hpp>
@@ -64,6 +65,8 @@ private:
     rclcpp::Publisher<sensor_msgs::msg::JointState>::SharedPtr joint_state_pub_;
 
     HexapodPhaseSM phase_sm_;
+
+    std::unique_ptr<MovementStrategy> movement_strategy_;
 
     /**
      * @brief Callback function for processing incoming velocity commands.

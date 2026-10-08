@@ -23,6 +23,9 @@ add_executable(hexapod_gait
   src/wave_gait_concrete.cpp
   src/tripod_gait_concrete.cpp
   src/phase_sm.cpp
+  src/movement_factory.cpp
+  src/holonomic_movement_concrete.cpp
+  src/non_holonomic_movement_concrete.cpp
 )
 target_include_directories(hexapod_gait PUBLIC
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
@@ -65,6 +68,9 @@ if(BUILD_TESTING)
     src/tripod_gait_concrete.cpp
     src/trajectory_generator.cpp
     src/phase_sm.cpp
+    src/movement_factory.cpp
+    src/holonomic_movement_concrete.cpp
+    src/non_holonomic_movement_concrete.cpp
   )
   target_include_directories(test_leg_ik PUBLIC
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>

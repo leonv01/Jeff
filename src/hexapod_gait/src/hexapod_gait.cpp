@@ -8,6 +8,7 @@
 #include "hexapod_gait/hexapod_gait.hpp"
 
 #include "gait_factory/gait_factory.hpp"
+#include "movement_factory/movement_factory.hpp"
 
 #include <string>
 
@@ -28,6 +29,8 @@ HexapodGait::HexapodGait() : rclcpp::Node("hexapod_gait_node")
   this->declare_parameter<double>("step_depth", -0.08);
 
   phase_sm_ = HexapodPhaseSM();
+
+  movement_strategy_ = MovementFactory::create_movement("holonomic");
 
   int total_steps = this->get_parameter("total_steps").as_int();
 
@@ -135,7 +138,7 @@ void HexapodGait::control_timer_callback()
   /* ---------------------------- Generate targets ---------------------------- */
   double step_distance = this->get_parameter("step_distance").as_double();
 
-  double alpha = (speed > 0.001) ? std::atan2(vy, vx) : 0.0;
+  double alpha = movement_strategy_->CalculateMovementAngle(dt, vx, vy);
 
   Eigen::Vector3d relative_target(step_distance, 0.0, current_depth);
 
