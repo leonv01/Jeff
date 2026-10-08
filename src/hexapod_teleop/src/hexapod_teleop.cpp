@@ -26,13 +26,13 @@ HexapodTeleop::HexapodTeleop() : rclcpp::Node("hexapod_teleop_node")
 
   gait_publisher_ = this->create_publisher<std_msgs::msg::String>("/gait_mode", 10);
   cmd_vel_publisher_ = this->create_publisher<geometry_msgs::msg::Twist>("/cmd_vel", 10);
+  body_pose_publisher_ = this->create_publisher<geometry_msgs::msg::Pose>("/body_pose", 10);
 
   RCLCPP_INFO(this->get_logger(), "Hexapod Teleop Node initialized listening to /joy and publishing to /cmd_vel and /gait_mode");
 }
 
 void HexapodTeleop::JoySubscriber(const sensor_msgs::msg::Joy::SharedPtr msg)
 {
-  // --- 1. Process Velocity Commands from Analog Sticks ---
   int axis_lx = this->get_parameter("axes.linear_x").as_int();
   int axis_ly = this->get_parameter("axes.linear_y").as_int();
   int axis_az = this->get_parameter("axes.angular_z").as_int();
@@ -40,6 +40,17 @@ void HexapodTeleop::JoySubscriber(const sensor_msgs::msg::Joy::SharedPtr msg)
   double scale_lx = this->get_parameter("scale.linear_x").as_double();
   double scale_ly = this->get_parameter("scale.linear_y").as_double();
   double scale_az = this->get_parameter("scale.angular_z").as_double();
+
+  bool dpad_up = (msg->axes.size() > 7 && msg->axes[7] > 0.5);
+  bool dpad_down = (msg->axes.size() > 7 && msg->axes[7] < -0.5);
+  bool dpad_left = (msg->axes.size() > 6 && msg->axes[6] > 0.5);
+  bool dpad_right = (msg->axes.size() > 6 && msg->axes[6] < -0.5);
+
+  geometry_msgs::msg::Pose pose_msg;
+  pose_msg.position.x = dpad_right ? 1.0 : (dpad_left ? -1.0 : 0.0);
+  pose_msg.position.z = dpad_up ? 1.0 : (dpad_down ? -1.0 : 0.0);
+
+  body_pose_publisher_->publish(pose_msg);
 
   geometry_msgs::msg::Twist twist;
 
@@ -58,7 +69,6 @@ void HexapodTeleop::JoySubscriber(const sensor_msgs::msg::Joy::SharedPtr msg)
 
   cmd_vel_publisher_->publish(twist);
 
-  // --- 2. Process Gait Mode Selection Buttons ---
   std::string gait_mode = "";
 
   if (is_button_pressed(msg, "buttons.tripod_gait")) gait_mode = "tripod_gait";

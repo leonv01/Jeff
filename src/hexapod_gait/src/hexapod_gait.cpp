@@ -194,7 +194,24 @@ void HexapodGait::control_timer_callback()
 
 void HexapodGait::body_pose_callback(const geometry_msgs::msg::Pose::SharedPtr msg)
 {
-  (void)msg;  
+  const double step_rate = 0.003;
+
+  if (msg->position.x != 0.0)
+  {
+    double current_dist = this->get_parameter("step_distance").as_double();
+    current_dist += msg->position.x * step_rate;
+    current_dist = std::clamp(current_dist, 0.070, 0.140);
+    this->set_parameter(rclcpp::Parameter("step_distance", current_dist));
+  }
+
+  if (msg->position.z != 0.0)
+  {
+    double current_depth = this->get_parameter("step_depth").as_double();
+
+    current_depth -= msg->position.z * step_rate;
+    current_depth = std::clamp(current_depth, -0.040, 0.010);
+    this->set_parameter(rclcpp::Parameter("step_depth", current_depth));
+  }
 }
 
 void HexapodGait::adjust_leg_angles(LegData &leg_data)
