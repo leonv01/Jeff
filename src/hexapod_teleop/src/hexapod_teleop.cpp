@@ -66,7 +66,7 @@ void HexapodTeleop::JoySubscriber(const sensor_msgs::msg::Joy::SharedPtr msg)
   else if (is_button_pressed(msg, "buttons.ripple_gait")) gait_mode = "ripple_gait";
   else if (is_button_pressed(msg, "buttons.toggle_pose_mode")) gait_mode = "toggle_pose";
   else if (is_button_pressed(msg, "buttons.stand_sit_toggle")) gait_mode = "stand_sit_toggle";
-  else if (is_button_pressed(msg, "movement_toggle")) gait_mode = "movement_toggle";
+  else if (is_button_pressed(msg, "buttons.movement_toggle")) gait_mode = "movement_toggle";
 
   if (gait_mode.empty() == false)
   {
