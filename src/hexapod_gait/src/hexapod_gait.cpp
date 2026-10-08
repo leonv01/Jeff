@@ -69,14 +69,14 @@ void HexapodGait::gait_mode_callback(const std_msgs::msg::String::SharedPtr msg)
 {
   const std::string new_gait = msg->data;
 
-  if (new_gait == "toggle_stand_sit")
+  if (new_gait == "stand_sit_toggle" || new_gait == "toggle_stand_sit")
   {
     phase_sm_.toggle_stand_sit();
 
     return;
   } 
 
-  if (new_gait == "toggle_movement")
+  if (new_gait == "movement_toggle" || new_gait == "toggle_movement")
   {
     movement_sm_.toggle_movement();
 
