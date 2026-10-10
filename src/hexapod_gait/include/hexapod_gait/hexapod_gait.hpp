@@ -93,7 +93,9 @@ private:
     /**
      * @brief Periodic control loop callback executing gait propagation, inverse kinematics, and joint state publication.
      */
-    void control_timer_callback();
+    void control_timer_callback(void);
+
+    void print_parameters(void);
 };
 
 } // namespace hexapod_gait

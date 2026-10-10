@@ -1,0 +1,15 @@
+hexapod_gait_node:
+  ros__parameters:
+    total_steps: 60
+    max_stride_length: 0.080
+    swing_height: 0.040
+    speed_factor: 0.5
+    speed_increment: 0.1
+    step_distance: 0.110
+    step_depth: -0.08
+    step_max_height: -0.040
+    step_min_height: -0.100
+    step_rate: 0.003
+    step_max_distance: 0.140
+    step_min_distance: 0.070
+    default_gait_strategy: "tripod_gait"

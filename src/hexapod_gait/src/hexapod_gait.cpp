@@ -11,10 +11,13 @@
 #include "movement_factory/movement_factory.hpp"
 
 #include <string>
+#include <iostream>
+#include <vector>
+#include <sstream>
+#include <iomanip>
 
 namespace hexapod_gait
 {
-
 
 HexapodGait::HexapodGait() : rclcpp::Node("hexapod_gait_node")
 {
@@ -27,6 +30,12 @@ HexapodGait::HexapodGait() : rclcpp::Node("hexapod_gait_node")
   this->declare_parameter<double>("speed_increment", 0.1);
   this->declare_parameter<double>("step_distance", 0.110);
   this->declare_parameter<double>("step_depth", -0.08);
+  this->declare_parameter<double>("step_max_height", -0.040);
+  this->declare_parameter<double>("step_min_height", -0.100);
+  this->declare_parameter<double>("step_rate", 0.003);
+  this->declare_parameter<double>("step_max_distance", 0.140);
+  this->declare_parameter<double>("step_min_distance", 0.070);
+  this->declare_parameter<std::string>("default_gait_strategy", "tripod_gait");
 
   int total_steps = this->get_parameter("total_steps").as_int();
 
@@ -49,15 +58,14 @@ HexapodGait::HexapodGait() : rclcpp::Node("hexapod_gait_node")
     std::bind(&HexapodGait::body_pose_callback, this, std::placeholders::_1)
   );
 
-  const std::string default_strategy = "tripod_gait";
-  gait_strategy_ = std::move(GaitFactory::create_gait(default_strategy, total_steps));
+  gait_strategy_ = std::move(GaitFactory::create_gait(this->get_parameter("default_gait_strategy").as_string(), total_steps));
 
   control_timer_ = this->create_wall_timer(
     std::chrono::milliseconds(CONTROL_TIMER_INTERVAL),
     std::bind(&HexapodGait::control_timer_callback, this)
   );
 
-  RCLCPP_INFO(this->get_logger(), "Hexapod Gait Node initialized with total_steps=%d", total_steps);
+  print_parameters();
 }
 
 void HexapodGait::cmd_vel_callback(const geometry_msgs::msg::Twist::SharedPtr msg)
@@ -194,13 +202,17 @@ void HexapodGait::control_timer_callback()
 
 void HexapodGait::body_pose_callback(const geometry_msgs::msg::Pose::SharedPtr msg)
 {
-  const double step_rate = 0.003;
+  const double step_rate = this->get_parameter("step_rate").as_double();
 
   if (msg->position.x != 0.0)
   {
     double current_dist = this->get_parameter("step_distance").as_double();
     current_dist += msg->position.x * step_rate;
-    current_dist = std::clamp(current_dist, 0.070, 0.140);
+    current_dist = std::clamp(
+      current_dist, 
+      this->get_parameter("step_min_distance").as_double(),
+      this->get_parameter("step_max_distance").as_double() 
+    );
     this->set_parameter(rclcpp::Parameter("step_distance", current_dist));
   }
 
@@ -209,7 +221,11 @@ void HexapodGait::body_pose_callback(const geometry_msgs::msg::Pose::SharedPtr m
     double current_depth = this->get_parameter("step_depth").as_double();
 
     current_depth -= msg->position.z * step_rate;
-    current_depth = std::clamp(current_depth, -0.040, 0.010);
+    current_depth = std::clamp(
+      current_depth, 
+      this->get_parameter("step_min_height").as_double(), 
+      this->get_parameter("step_max_height").as_double()
+    );
     this->set_parameter(rclcpp::Parameter("step_depth", current_depth));
   }
 }
@@ -232,6 +248,24 @@ void HexapodGait::adjust_leg_angles(LegData &leg_data)
   leg_data.coxa_joint_ = std::clamp(leg_data.coxa_joint_, 0.0, M_PI);
   leg_data.femur_joint_ = std::clamp(leg_data.femur_joint_, 0.0, M_PI);
   leg_data.tibia_joint_ = std::clamp(leg_data.tibia_joint_, 0.0, M_PI - 1/4 * M_PI);
+}
+
+void HexapodGait::print_parameters(void)
+{
+  auto param_list = this->list_parameters({}, 0);
+
+  std::stringstream ss;
+  ss << "Hexapod Gait Node initialized with parameters:\n";
+
+  for (const auto &name : param_list.names)
+  {
+    if (name == "use_sim_time") continue;
+
+    auto p = this->get_parameter(name);
+    ss << "  - " << std::left << std::setw(24) << name << " = " << p.value_to_string() << "\n";
+  }
+
+  RCLCPP_INFO_STREAM(this->get_logger(), ss.str());
 }
 
 }

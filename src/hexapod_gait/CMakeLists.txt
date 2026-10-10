@@ -45,7 +45,7 @@ ament_target_dependencies(hexapod_gait
 install(TARGETS hexapod_gait
   DESTINATION lib/${PROJECT_NAME})
 
-install(DIRECTORY launch
+install(DIRECTORY launch config
   DESTINATION share/${PROJECT_NAME}
 )
 

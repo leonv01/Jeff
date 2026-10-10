@@ -1,3 +1,5 @@
+import os
+from ament_index_python.packages import get_package_share_directory
 from launch import LaunchDescription
 from launch.actions import DeclareLaunchArgument
 from launch.substitutions import LaunchConfiguration
@@ -5,21 +7,21 @@ from launch_ros.actions import Node
 
 def generate_launch_description() -> LaunchDescription:
     
-    total_steps_arg: DeclareLaunchArgument = DeclareLaunchArgument(
-        'total_steps',
-        default_value='30',
-        description='Total steps per cycle gait'
+    ld: LaunchDescription = LaunchDescription()
+    
+    config = os.path.join(
+        get_package_share_directory('hexapod_gait'),
+        'config',
+        'params.yaml'
     )
     
     gait_node: Node = Node(
         package='hexapod_gait',
         executable='hexapod_gait',
         name='hexapod_gait_node',
-        parameters=[{ 'total_steps': LaunchConfiguration('total_steps') }],
+        parameters=[config],
         output='screen'
     )
     
-    return LaunchDescription([
-        total_steps_arg,
-        gait_node
-    ])
+    ld.add_action(gait_node)
+    return ld
