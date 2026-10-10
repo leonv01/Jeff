@@ -33,7 +33,7 @@ def generate_launch_description() -> LaunchDescription:
     
     # 1. Standalone PCA9685 Servo Driver Node
     servo_driver_node = Node(
-        package='hexapod_servo_driver',
+        package='hexapod_hardware',
         executable='servo_driver_node',
         name='hexapod_servo_driver_node',
         parameters=[{
@@ -80,3 +80,4 @@ def generate_launch_description() -> LaunchDescription:
         teleop_node,
         joy_node
     ])
+

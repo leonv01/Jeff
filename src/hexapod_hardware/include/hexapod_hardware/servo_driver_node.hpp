@@ -1,5 +1,5 @@
-#ifndef SERVO_DRIVER_NODE_HPP_
-#define SERVO_DRIVER_NODE_HPP_
+#ifndef HEXAPOD_HARDWARE_SERVO_DRIVER_NODE_HPP_
+#define HEXAPOD_HARDWARE_SERVO_DRIVER_NODE_HPP_
 
 #include <memory>
 #include <string>
@@ -14,7 +14,7 @@
 #include "hal_strategy/mock_concrete.hpp"
 #include "hal_data/servo_command.hpp"
 
-namespace hexapod_servo_driver
+namespace hexapod_hardware
 {
 
 class ServoDriverNode : public rclcpp::Node
@@ -26,12 +26,13 @@ public:
 private:
     void joint_command_callback(const sensor_msgs::msg::JointState::SharedPtr msg);
 
-    std::unique_ptr<hexapod_hardware::ServoStrategy> servo_strategy_;
+    std::unique_ptr<ServoStrategy> servo_strategy_;
     rclcpp::Subscription<sensor_msgs::msg::JointState>::SharedPtr joint_cmd_sub_;
 
     std::unordered_map<std::string, size_t> joint_name_to_index_;
 };
 
-} // namespace hexapod_servo_driver
+} // namespace hexapod_hardware
 
-#endif // SERVO_DRIVER_NODE_HPP_
+#endif // HEXAPOD_HARDWARE_SERVO_DRIVER_NODE_HPP_
+

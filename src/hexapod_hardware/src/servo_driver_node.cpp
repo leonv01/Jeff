@@ -3,9 +3,9 @@
  * @brief Standalone ROS 2 node for controlling PCA9685 hexapod servos directly from joint commands.
  */
 
-#include "hexapod_servo_driver/servo_driver_node.hpp"
+#include "hexapod_hardware/servo_driver_node.hpp"
 
-namespace hexapod_servo_driver
+namespace hexapod_hardware
 {
 
 ServoDriverNode::ServoDriverNode(const rclcpp::NodeOptions &options)
@@ -19,12 +19,12 @@ ServoDriverNode::ServoDriverNode(const rclcpp::NodeOptions &options)
 
     if (hardware_type == "pca9685")
     {
-        servo_strategy_ = std::make_unique<hexapod_hardware::PCA9685Concrete>();
+        servo_strategy_ = std::make_unique<PCA9685Concrete>();
         RCLCPP_INFO(this->get_logger(), "Initialized PCA9685 Physical Hardware Strategy");
     }
     else
     {
-        servo_strategy_ = std::make_unique<hexapod_hardware::MockConcrete>();
+        servo_strategy_ = std::make_unique<MockConcrete>();
         RCLCPP_INFO(this->get_logger(), "Initialized Mock Hardware Strategy");
     }
 
@@ -72,7 +72,7 @@ void ServoDriverNode::joint_command_callback(const sensor_msgs::msg::JointState:
         auto it = joint_name_to_index_.find(msg->name[i]);
         if (it != joint_name_to_index_.end() && i < msg->position.size())
         {
-            hexapod_hardware::ServoCommand command{
+            ServoCommand command{
                 static_cast<unsigned int>(it->second),
                 msg->position[i]
             };
@@ -81,13 +81,14 @@ void ServoDriverNode::joint_command_callback(const sensor_msgs::msg::JointState:
     }
 }
 
-} // namespace hexapod_servo_driver
+} // namespace hexapod_hardware
 
 int main(int argc, char **argv)
 {
     rclcpp::init(argc, argv);
-    auto node = std::make_shared<hexapod_servo_driver::ServoDriverNode>();
+    auto node = std::make_shared<hexapod_hardware::ServoDriverNode>();
     rclcpp::spin(node);
     rclcpp::shutdown();
     return 0;
 }
+
