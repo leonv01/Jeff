@@ -61,10 +61,10 @@ source /opt/ros/humble/setup.bash
 source install/setup.bash
 
 # Real hardware execution on Raspberry Pi:
-ros2 launch hexapod_servo_driver bringup.launch.py
+ros2 launch hexapod_hardware bringup.launch.py
 
 # Simulation / Mock hardware dry-run:
-ros2 launch hexapod_servo_driver bringup.launch.py hardware_type:=mock
+ros2 launch hexapod_hardware bringup.launch.py hardware_type:=mock
 ```
 
 ---
