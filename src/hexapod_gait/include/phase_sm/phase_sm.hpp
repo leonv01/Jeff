@@ -10,7 +10,8 @@ enum class RobotPhase
     SITTING_DOWN,
     STANDING_UP,
     STANDING,
-    WALKING
+    WALKING,
+    ROTATING,
 };
 
 class HexapodPhaseSM
@@ -28,11 +29,12 @@ public:
         transition_duration_(transition_duration),
         progress_(0.0) { }
 
-    void update(double dt, bool has_velocity);
+    void update(double dt, bool has_velocity, bool has_rotation);
     void toggle_stand_sit(void);
     double get_height_factor(void) const;
 
     RobotPhase get_phase() const { return current_phase_; }
+    bool can_rotate() const { return current_phase_ == RobotPhase::ROTATING; }
     bool can_walk() const { return current_phase_ == RobotPhase::WALKING; }
     bool is_sitting() const { return current_phase_ == RobotPhase::SITTING; }
 };

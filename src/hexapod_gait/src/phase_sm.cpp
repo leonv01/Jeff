@@ -5,7 +5,7 @@
 
 namespace hexapod_gait
 {
-void HexapodPhaseSM::update(double dt, bool has_velocity)
+void HexapodPhaseSM::update(double dt, bool has_velocity, bool has_rotation)
 {
     switch (current_phase_)
     {
@@ -28,13 +28,23 @@ void HexapodPhaseSM::update(double dt, bool has_velocity)
             }
             break;
         case RobotPhase::STANDING:
-            if (has_velocity)
+            if (has_rotation)
+            {
+                current_phase_ = RobotPhase::ROTATING;
+            }
+            else if (has_velocity)
             {
                 current_phase_ = RobotPhase::WALKING;
             }
             break;
         case RobotPhase::WALKING:
             if (has_velocity == false)
+            {
+                current_phase_ = RobotPhase::STANDING;
+            }
+            break;
+        case RobotPhase::ROTATING:
+            if (has_rotation == false)
             {
                 current_phase_ = RobotPhase::STANDING;
             }

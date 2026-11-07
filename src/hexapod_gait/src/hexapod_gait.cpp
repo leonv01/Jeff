@@ -117,11 +117,14 @@ void HexapodGait::control_timer_callback()
 
   double vx = current_velocity_.linear.x;
   double vy = current_velocity_.linear.y;
+  double az = current_velocity_.angular.z;
+
   double speed = std::sqrt(vx * vx + vy * vy);
-  bool has_velocity = (speed > 0.001 || std::abs(current_velocity_.angular.z) > 0.001);
+  bool has_velocity = speed > 0.001;
+  bool has_rotation =  std::abs(az) > 0.001;
 
   /* -------------------------- Update state machine -------------------------- */
-  phase_sm_.update(dt, has_velocity);
+  phase_sm_.update(dt, has_velocity, has_rotation);
 
   /* ------------------------ Calculate desired height ------------------------ */
   double standing_depth = this->get_parameter("step_depth").as_double();
@@ -136,6 +139,7 @@ void HexapodGait::control_timer_callback()
   double speed_increment = this->get_parameter("speed_increment").as_double();
   double swing_height = this->get_parameter("swing_height").as_double();
 
+  bool is_rotating = phase_sm_.can_rotate();
   bool is_walking = phase_sm_.can_walk();
   double stride_length = (is_walking) ? std::clamp(speed * speed_factor, speed_increment, max_stride_length) : 0.0;
   swing_height = (is_walking) ? swing_height : 0.0;
@@ -149,7 +153,16 @@ void HexapodGait::control_timer_callback()
   /* ---------------------------- Generate targets ---------------------------- */
   double step_distance = this->get_parameter("step_distance").as_double();
 
-  double alpha = movement_sm_.get_movement_strategy()->CalculateMovementAngle(dt, vx, vy);
+  double alpha;
+
+  if (is_rotating)
+  {
+    alpha = M_PI;
+  }
+  else 
+  {
+    alpha = movement_sm_.get_movement_strategy()->CalculateMovementAngle(dt, vx, vy);
+  }
 
   Eigen::Vector3d relative_target(step_distance, 0.0, current_depth);
 
