@@ -62,16 +62,16 @@ GaitStrategy::GaitStrategy(double duty_cycle, std::unordered_map<LEG, double> le
 {
 }
 
-std::unordered_map<LEG, LegData> GaitStrategy::propagate_gait(int step, double stride_length, double swing_height, const Eigen::Vector3d &relative_target, double alpha)
+std::unordered_map<LEG, LegData> GaitStrategy::propagate_gait(int step, double stride_length, double swing_height, const Eigen::Vector3d &relative_target, double alpha, bool is_rotating)
 {
-    std::for_each(leg_map_.begin(), leg_map_.end(), [this, step, stride_length, swing_height, relative_target, alpha](auto& leg_entry) {
-        leg_entry.second = this->propagate_leg(leg_entry.first, step, stride_length, swing_height, relative_target, alpha);
+    std::for_each(leg_map_.begin(), leg_map_.end(), [this, step, stride_length, swing_height, relative_target, alpha, is_rotating](auto& leg_entry) {
+        leg_entry.second = this->propagate_leg(leg_entry.first, step, stride_length, swing_height, relative_target, alpha, is_rotating);
     });
 
     return leg_map_;
 }
 
-LegData GaitStrategy::propagate_leg(LEG leg, int step, double stride_length, double swing_height, const Eigen::Vector3d &relative_target, double alpha)
+LegData GaitStrategy::propagate_leg(LEG leg, int step, double stride_length, double swing_height, const Eigen::Vector3d &relative_target, double alpha, bool is_rotating)
 {
     LegData leg_data = get_leg(leg);
 
@@ -82,6 +82,11 @@ LegData GaitStrategy::propagate_leg(LEG leg, int step, double stride_length, dou
     double leg_phase = std::fmod(global_progress - leg_offsets_[leg] + 1.0, 1.0);
     double mount_angle = leg_data.leg_mount_angle_;
     
+    if (is_rotating)
+    {
+        mount_angle = 0.0;
+    }
+
     Eigen::Matrix3d T_leg = Eigen::AngleAxisd(mount_angle, Eigen::Vector3d::UnitZ()).toRotationMatrix();
     Eigen::Matrix3d T_leg_t = T_leg.transpose();
 

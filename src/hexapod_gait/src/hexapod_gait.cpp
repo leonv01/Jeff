@@ -142,9 +142,9 @@ void HexapodGait::control_timer_callback()
   bool is_rotating = phase_sm_.can_rotate();
   bool is_walking = phase_sm_.can_walk();
   double stride_length = (is_walking) ? std::clamp(speed * speed_factor, speed_increment, max_stride_length) : 0.0;
-  swing_height = (is_walking) ? swing_height : 0.0;
+  swing_height = (is_walking || is_rotating) ? swing_height : 0.0;
   
-  if (is_walking)
+  if (is_walking || is_rotating)
   {
     step_counter_ = (step_counter_ + 1) % this->get_parameter("total_steps").as_int();
     gait_strategy_->update_current_steps(step_counter_);
@@ -158,6 +158,7 @@ void HexapodGait::control_timer_callback()
   if (is_rotating)
   {
     alpha = M_PI;
+    stride_length = max_stride_length;
   }
   else 
   {
@@ -166,7 +167,7 @@ void HexapodGait::control_timer_callback()
 
   Eigen::Vector3d relative_target(step_distance, 0.0, current_depth);
 
-  std::unordered_map<LEG, LegData> leg_data = gait_strategy_->propagate_gait(step_counter_, stride_length, swing_height, relative_target, alpha);
+  std::unordered_map<LEG, LegData> leg_data = gait_strategy_->propagate_gait(step_counter_, stride_length, swing_height, relative_target, alpha, is_rotating);
 
   /* ----------------------------- Prepare message ---------------------------- */
   auto joint_msg = sensor_msgs::msg::JointState();
