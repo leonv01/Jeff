@@ -7,7 +7,7 @@ import cv2
 class ImagePublisher(Node):
     def __init__(self):
         super().__init__("camera_node")
-        self.declare_parameter('device', 1)
+        self.declare_parameter('device', "/dev/v4l/by-id/usb-Sonix_Technology_Co.__Ltd._USB_2.0_Camera_SN0001-video-index0")
         self.declare_parameter('rate', 10.0)
 
         device = self.get_parameter('device').value

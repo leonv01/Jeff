@@ -50,6 +50,7 @@ RUN pip3 install --no-cache-dir adafruit-circuitpython-ina3221 adafruit-blinka
 # Install libraries for MPU6500
 RUN pip3 install --no-cache-dir smbus2
 
+RUN pip3 install --no-cache-dir torch torchvision --index-url https://download.pytorch.org/whl/cpu
 # Install Ultralytics YOLO (pinned numpy<2 and opencv-python<5 for ROS 2 Humble cv_bridge compatibility)
 RUN pip3 install --no-cache-dir "setuptools<80" "packaging>=22.0" "numpy<2" "opencv-python<5" ultralytics
 
@@ -68,4 +69,4 @@ RUN echo "source /opt/ros/humble/setup.bash" >> /etc/bash.bashrc \
 
 WORKDIR /home/ws
 USER $USERNAME
-CMD ["/bin/bash"]
+CMD ["/bin/bash", "/home/ws/bringup.sh"]

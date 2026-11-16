@@ -20,7 +20,7 @@ class YoloDetector(Node):
         
         self.classes = None  # None = detect all classes; or e.g. [0] for persons
         
-        self.model_name = 'yolo11n.pt'
+        self.model_name = '/home/ws/src/hexapod_vision/model/yolo11n.pt'
         self.model = YOLO(self.model_name, task='detect')
         self.br = CvBridge()
         
