@@ -26,8 +26,6 @@ class ImagePublisher(Node):
         self.cap = cv2.VideoCapture(device, cv2.CAP_V4L2)
         if not self.cap.isOpened():
             self.get_logger().error(f'Could not open camera')
-        else:
-            self.get_logger().info(f'Opened camera')
             
         self.cap.set(cv2.CAP_PROP_FOURCC, cv2.VideoWriter_fourcc(*fourcc))
         self.cap.set(cv2.CAP_PROP_FRAME_WIDTH, width)
@@ -48,6 +46,7 @@ class ImagePublisher(Node):
         if not ret:
             self.get_logger().warn('Failed to read frame')
             return
+        frame = cv2.flip(frame, 0)
         msg = self.br.cv2_to_imgmsg(frame, encoding='bgr8')
         msg.header.stamp = self.get_clock().now().to_msg()
         msg.header.frame_id = 'camera'

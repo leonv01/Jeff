@@ -11,7 +11,7 @@ class YoloDetector(Node):
     def __init__(self):
         super().__init__('yolo_detector_node')
         self.conf = 0.4
-        self.imgsz = 640
+        self.imgsz = 320
         self.device = 'cpu'
         self.track = True
         self.tracker = 'bytetrack.yaml'
