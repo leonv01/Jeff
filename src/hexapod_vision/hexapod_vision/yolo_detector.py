@@ -18,7 +18,7 @@ class YoloDetector(Node):
         self.min_track_age = 3
         self.every_n = 1
         
-        self.classes = None  # None = detect all classes; or e.g. [0] for persons
+        self.classes = None  
         
         self.model_name = '/home/ws/src/hexapod_vision/model/yolo11n.pt'
         self.model = YOLO(self.model_name, task='detect')

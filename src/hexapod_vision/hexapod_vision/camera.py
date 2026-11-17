@@ -1,9 +1,11 @@
 import rclpy
 from rclpy.node import Node
 from sensor_msgs.msg import Image
+from std_msgs.msg import Empty
 from rclpy.qos import qos_profile_sensor_data
 from cv_bridge import CvBridge
 import cv2
+import time
 
 class ImagePublisher(Node):
     def __init__(self):
@@ -13,13 +15,22 @@ class ImagePublisher(Node):
         self.declare_parameter('width', 640)
         self.declare_parameter('height', 480)
         self.declare_parameter('fourcc', 'MJPG')
-
-        device = self.get_parameter('device').value
-        rate = self.get_parameter('rate').value
-        width = self.get_parameter('width').value
-        height = self.get_parameter('height').value
-        fourcc = self.get_parameter('fourcc').value
+        self.declare_parameter('cooldown', 2.0)
         
+        self.device = self.get_parameter('device').value
+        self.rate = self.get_parameter('rate').value
+        self.width = self.get_parameter('width').value
+        self.height = self.get_parameter('height').value
+        self.fourcc = self.get_parameter('fourcc').value
+        self.cooldown = self.get_parameter('cooldown').value
+        self.last_capture_time = None
+        
+        self.image_capute_sub_ = self.create_subscription(
+            Empty,
+            "/image_capture",
+            self.image_save_callback,
+            10
+        )
         self.publisher_ = self.create_publisher(Image, 'video_frames', qos_profile_sensor_data)
         self.br = CvBridge()
         
@@ -52,6 +63,22 @@ class ImagePublisher(Node):
         msg.header.stamp = self.get_clock().now().to_msg()
         msg.header.frame_id = 'camera'
         self.publisher_.publish(msg)
+    
+    def image_save_callback(self, msg):
+        now = self.get_clock().now()
+        if (self.last_capture_time is not None and
+            (now - self.last_capture_time).nanoseconds * 1e-9 < self.cooldown):
+            self.get_logger().info('Capture ignored (cooldown active)')
+            return
+
+        ret, frame = self.cap.read()
+        if not ret:
+            self.get_logger().warn('Failed to read frame')
+            return
+        
+        timestr = time.strftime("%Y%m%d-%H%M%S")
+        cv2.imwrite(f'/home/ws/image_captures/{timestr}.jpg', frame)
+        self.last_capture_time = now
 
     def destroy_node(self):
         self.cap.release()
