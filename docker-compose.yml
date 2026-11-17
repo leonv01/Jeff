@@ -7,9 +7,9 @@ services:
         USERNAME: leonv
     container_name: hexapod_ros2
     network_mode: host
-    devices:
-      - "/dev/i2c-1:/dev/i2c-1"
-      - "/dev/input:/dev/input"
+    device_cgroup_rules:
+      - 'c 81:* rmw' 
+      - 'c 189:* rmw'    
     environment:
       - ROS_DOMAIN_ID=42
       - ROS_AUTOMATIC_DISCOVERY_RANGE=SUBNET
@@ -17,6 +17,10 @@ services:
     volumes:
       - .:/home/ws
       - /tmp/.X11-unix:/tmp/.X11-unix
+      - /dev:/dev
     restart: unless-stopped
+    privileged: true
     stdin_open: true
     tty: true
+    group_add:
+      - video

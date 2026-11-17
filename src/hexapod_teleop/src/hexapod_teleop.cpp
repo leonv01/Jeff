@@ -11,6 +11,7 @@ HexapodTeleop::HexapodTeleop() : rclcpp::Node("hexapod_teleop_node")
   this->declare_parameter<int>("buttons.toggle_pose_mode", 2);
   this->declare_parameter<int>("buttons.stand_sit_toggle", 9);
   this->declare_parameter<int>("buttons.movement_toggle", 8);
+  this->declare_parameter<int>("buttons.image_capture", 11);
 
   this->declare_parameter<int>("axes.linear_x", 1);
   this->declare_parameter<int>("axes.linear_y", 0);
@@ -27,6 +28,7 @@ HexapodTeleop::HexapodTeleop() : rclcpp::Node("hexapod_teleop_node")
   gait_publisher_ = this->create_publisher<std_msgs::msg::String>("/gait_mode", 10);
   cmd_vel_publisher_ = this->create_publisher<geometry_msgs::msg::Twist>("/cmd_vel", 10);
   body_pose_publisher_ = this->create_publisher<geometry_msgs::msg::Pose>("/body_pose", 10);
+  image_capture_publisher_ = this->create_publisher<std_msgs::msg::Empty>("/image_capture", 10);
 
   RCLCPP_INFO(this->get_logger(), "Hexapod Teleop Node initialized listening to /joy and publishing to /cmd_vel and /gait_mode");
 }
@@ -70,6 +72,8 @@ void HexapodTeleop::JoySubscriber(const sensor_msgs::msg::Joy::SharedPtr msg)
   cmd_vel_publisher_->publish(twist);
 
   std::string gait_mode = "";
+  
+  bool image_capture = is_button_pressed(msg, "buttons.image_capture");
 
   if (is_button_pressed(msg, "buttons.tripod_gait")) gait_mode = "tripod_gait";
   else if (is_button_pressed(msg, "buttons.wave_gait")) gait_mode = "wave_gait";
@@ -85,6 +89,14 @@ void HexapodTeleop::JoySubscriber(const sensor_msgs::msg::Joy::SharedPtr msg)
     this->gait_publisher_->publish(gait_msg);
 
     RCLCPP_INFO(this->get_logger(), "Selected gait: %s", gait_mode.c_str());
+  }
+
+  if (image_capture)
+  {
+    std_msgs::msg::Empty image_capture_msg;
+    this->image_capture_publisher_->publish(image_capture_msg);
+
+    RCLCPP_INFO(this->get_logger(), "Image Capture pressed");
   }
 }
 
