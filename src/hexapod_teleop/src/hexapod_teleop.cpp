@@ -11,7 +11,7 @@ HexapodTeleop::HexapodTeleop() : rclcpp::Node("hexapod_teleop_node")
   this->declare_parameter<int>("buttons.toggle_pose_mode", 2);
   this->declare_parameter<int>("buttons.stand_sit_toggle", 9);
   this->declare_parameter<int>("buttons.movement_toggle", 8);
-  this->declare_parameter<int>("buttons.image_capture", 7);
+  this->declare_parameter<int>("buttons.image_capture", 11);
 
   this->declare_parameter<int>("axes.linear_x", 1);
   this->declare_parameter<int>("axes.linear_y", 0);
@@ -71,8 +71,9 @@ void HexapodTeleop::JoySubscriber(const sensor_msgs::msg::Joy::SharedPtr msg)
 
   cmd_vel_publisher_->publish(twist);
 
-  bool image_capture = false;
   std::string gait_mode = "";
+  
+  bool image_capture = is_button_pressed(msg, "buttons.image_capture");
 
   if (is_button_pressed(msg, "buttons.tripod_gait")) gait_mode = "tripod_gait";
   else if (is_button_pressed(msg, "buttons.wave_gait")) gait_mode = "wave_gait";
@@ -80,7 +81,6 @@ void HexapodTeleop::JoySubscriber(const sensor_msgs::msg::Joy::SharedPtr msg)
   else if (is_button_pressed(msg, "buttons.toggle_pose_mode")) gait_mode = "toggle_pose";
   else if (is_button_pressed(msg, "buttons.stand_sit_toggle")) gait_mode = "stand_sit_toggle";
   else if (is_button_pressed(msg, "buttons.movement_toggle")) gait_mode = "movement_toggle";
-  else if (is_button_pressed(msg, "buttons.image_capture")) image_capture = true;
 
   if (gait_mode.empty() == false)
   {

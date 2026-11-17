@@ -34,14 +34,14 @@ class ImagePublisher(Node):
         self.publisher_ = self.create_publisher(Image, 'video_frames', qos_profile_sensor_data)
         self.br = CvBridge()
         
-        self.cap = cv2.VideoCapture(device, cv2.CAP_V4L2)
+        self.cap = cv2.VideoCapture(self.device, cv2.CAP_V4L2)
         if not self.cap.isOpened():
             self.get_logger().error(f'Could not open camera')
             
-        self.cap.set(cv2.CAP_PROP_FOURCC, cv2.VideoWriter_fourcc(*fourcc))
-        self.cap.set(cv2.CAP_PROP_FRAME_WIDTH, width)
-        self.cap.set(cv2.CAP_PROP_FRAME_HEIGHT, height)
-        self.cap.set(cv2.CAP_PROP_FPS, rate)
+        self.cap.set(cv2.CAP_PROP_FOURCC, cv2.VideoWriter_fourcc(*self.fourcc))
+        self.cap.set(cv2.CAP_PROP_FRAME_WIDTH, self.width)
+        self.cap.set(cv2.CAP_PROP_FRAME_HEIGHT, self.height)
+        self.cap.set(cv2.CAP_PROP_FPS, self.rate)
         self.cap.set(cv2.CAP_PROP_BUFFERSIZE, 1)
         
         self.get_logger().info(
@@ -50,7 +50,7 @@ class ImagePublisher(Node):
             f'@ {self.cap.get(cv2.CAP_PROP_FPS):.1f} fps'
         )
 
-        self.timer = self.create_timer(1.0 / rate, self.timer_callback)
+        self.timer = self.create_timer(1.0 / self.rate, self.timer_callback)
         
     def timer_callback(self):
         ret, frame = self.cap.read()
@@ -71,13 +71,18 @@ class ImagePublisher(Node):
             return
 
         ret, frame = self.cap.read()
+        frame = cv2.flip(frame, 0)
         if not ret:
             self.get_logger().warn('Failed to read frame')
             return
         
         timestr = time.strftime("%Y%m%d-%H%M%S")
-        cv2.imwrite(f'/home/ws/image_captures/{timestr}.jpg', frame)
-        self.last_capture_time = now
+        path = f'/home/ws/image_captures/{timestr}.jpg'
+        if cv2.imwrite(path, frame):
+            self.get_logger().info(f'Saved {path}')
+            self.last_capture_time = now
+        else:
+            self.get_logger().error(f'Failed to write {path}')
 
     def destroy_node(self):
         self.cap.release()
