@@ -2,10 +2,10 @@
 <?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
 <package format="3">
   <name>hexapod_vision</name>
-  <version>0.0.0</version>
-  <description>TODO: Package description</description>
-  <maintainer email="leonvogt2001@gmail.com">leonv</maintainer>
-  <license>TODO: License declaration</license>
+  <version>0.1.0</version>
+  <description>Hexapod Vision Package. This package enables the use of vision tools such as cameras, as well as the use of CNN-based models (e.g. Yolo v11) for image classification.</description>
+  <maintainer email="leonvogt2001@gmail.com">Leon Vogt</maintainer>
+  <license>MIT</license>
 
   <depend>rclpy</depend>
   <depend>image_transport</depend>

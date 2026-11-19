@@ -2,10 +2,10 @@
 <?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
 <package format="3">
   <name>hexapod_hardware</name>
-  <version>0.0.0</version>
-  <description>TODO: Package description</description>
-  <maintainer email="leonvogt2001@gmail.com">leonv</maintainer>
-  <license>TODO: License declaration</license>
+  <version>0.1.0</version>
+  <description>Hexapod Hardware Package. This package manages the drivers of the servo actuators.</description>
+  <maintainer email="leonvogt2001@gmail.com">Leon Vogt</maintainer>
+  <license>MIT</license>
 
   <buildtool_depend>ament_cmake</buildtool_depend>
 

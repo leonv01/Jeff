@@ -2,9 +2,11 @@
 <?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
 <package format="3">
   <name>hexapod_imu</name>
-  <version>0.0.0</version>
-  <description>TODO: Package description</description>
-  <maintainer email="leonvogt2001@gmail.com">leonv</maintainer>
+  <version>0.1.0</version>
+  <description>Hexapod IMU Package. This package allows the use of gyroscopes such as the MPU6500 to determine tilting and acceleration.</description>
+  <maintainer email="leonvogt2001@gmail.com">Leon Vogt</maintainer>
+  <license>MIT</license>
+
   <exec_depend>rclpy</exec_depend>
   <exec_depend>sensor_msgs</exec_depend>
   <exec_depend>imu_filter_madgwick</exec_depend>
