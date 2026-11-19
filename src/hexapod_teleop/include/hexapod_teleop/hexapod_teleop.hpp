@@ -3,6 +3,7 @@
 
 #include <geometry_msgs/msg/twist.hpp>
 #include <geometry_msgs/msg/pose.hpp>
+#include <geometry_msgs/msg/vector3.hpp>
 #include <rclcpp/rclcpp.hpp>
 #include <sensor_msgs/msg/joy.hpp>
 #include <std_msgs/msg/string.hpp>
@@ -31,6 +32,7 @@ private:
     rclcpp::Publisher<geometry_msgs::msg::Twist>::SharedPtr cmd_vel_publisher_;
     rclcpp::Publisher<geometry_msgs::msg::Pose>::SharedPtr body_pose_publisher_;
     rclcpp::Publisher<std_msgs::msg::Empty>::SharedPtr image_capture_publisher_;
+    rclcpp::Publisher<geometry_msgs::msg::Vector3>::SharedPtr cmd_tilt_publisher_;
 
     GAIT_TYPE gait_type;
     bool is_button_pressed(const sensor_msgs::msg::Joy::SharedPtr msg, const std::string &param_name);

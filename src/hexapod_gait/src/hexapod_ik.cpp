@@ -40,4 +40,15 @@ Eigen::Vector3d HexapodIk::solve_ik(const Eigen::Vector3d &target)
     return Eigen::Vector3d(theta1, theta2, theta3);
 }
 
+Eigen::Matrix3d HexapodIk::rotation_matrix(double alpha, double beta, double gamma)
+{
+    Eigen::AngleAxisd rollAngle(alpha, Eigen::Vector3d::UnitX());
+    Eigen::AngleAxisd yawAngle(beta, Eigen::Vector3d::UnitY());
+    Eigen::AngleAxisd pitchAngle(gamma, Eigen::Vector3d::UnitZ());
+
+    Eigen::Matrix3d R = (yawAngle * pitchAngle * rollAngle).toRotationMatrix();
+
+    return R;
+}
+
 } // namespace hexapod_gait

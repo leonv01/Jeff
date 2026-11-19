@@ -62,19 +62,29 @@ GaitStrategy::GaitStrategy(double duty_cycle, std::unordered_map<LEG, double> le
 {
 }
 
-std::unordered_map<LEG, LegData> GaitStrategy::propagate_gait(int step, double stride_length, double swing_height, const Eigen::Vector3d &relative_target, double alpha)
+std::unordered_map<LEG, LegData> GaitStrategy::propagate_gait(int step, double stride_length, double swing_height, const Eigen::Vector3d &relative_target, double alpha, double tilt_alpha, double tilt_beta)
 {
-    std::for_each(leg_map_.begin(), leg_map_.end(), [this, step, stride_length, swing_height, relative_target, alpha](auto& leg_entry) {
-        leg_entry.second = this->propagate_leg(leg_entry.first, step, stride_length, swing_height, relative_target, alpha);
+    std::for_each(leg_map_.begin(), leg_map_.end(), [this, step, stride_length, swing_height, relative_target, alpha, tilt_alpha, tilt_beta](auto& leg_entry) {
+        leg_entry.second = this->propagate_leg(leg_entry.first, step, stride_length, swing_height, relative_target, alpha, tilt_alpha, tilt_beta);
     });
 
     return leg_map_;
 }
 
-LegData GaitStrategy::propagate_leg(LEG leg, int step, double stride_length, double swing_height, const Eigen::Vector3d &relative_target, double alpha)
+LegData GaitStrategy::propagate_leg(LEG leg, int step, double stride_length, double swing_height, const Eigen::Vector3d &relative_target, double alpha, double tilt_alpha, double tilt_beta)
 {
     LegData leg_data = get_leg(leg);
 
+    Eigen::Matrix3d R = HexapodIk::rotation_matrix(tilt_alpha, tilt_beta, 0.0);
+    Eigen::Vector3d P = R * leg_data.base_point_;
+
+    Eigen::Vector3d adjusted_target = relative_target; // - P;
+    adjusted_target(2) -= P(2);
+
+    RCLCPP_INFO(rclcpp::get_logger("gait_strategy"), "target: (%.2f, %.2f, %.2f) new: (%.2f, %.2f, %.2f)",
+            relative_target(0), relative_target(1), relative_target(2),
+            P(0), P(1), P(2));
+    
     const Eigen::Vector3d walk_dir(std::cos(alpha), std::sin(alpha), 0.0);
 
     double swing_fraction = 1.0 - duty_cycle_;
@@ -98,7 +108,7 @@ LegData GaitStrategy::propagate_leg(LEG leg, int step, double stride_length, dou
         offset_body = walk_dir * (stride_length / 2.0) * (1.0 - 2.0 * tau);
     }
 
-    const Eigen::Vector3d P_home_local = relative_target.transpose();
+    const Eigen::Vector3d P_home_local = adjusted_target.transpose();
     const Eigen::Vector3d P_local = P_home_local + T_leg_t * offset_body;
 
     const auto angles = HexapodIk::solve_ik(P_local);

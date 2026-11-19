@@ -18,7 +18,7 @@ namespace hexapod_gait
 #define LEG_COUNT 6
 
 /// @brief Distance from body center to leg mount base origin in millimeters (117.67 mm).
-#define LEG_DISTANCE 117.66964
+#define LEG_DISTANCE 0.11766964
 
 /**
  * @enum LEG
@@ -146,7 +146,7 @@ public:
      * @param alpha Heading/direction angle in radians.
      * @return std::unordered_map<LEG, LegData> Map of updated leg states indexed by leg enum.
      */
-    virtual std::unordered_map<LEG, LegData> propagate_gait(int step, double stride_length = 0.0, double swing_height = 0.0, const Eigen::Vector3d &relative_target = Eigen::Vector3d(0.08, 0.0, -0.08), double alpha = 0.0);
+    virtual std::unordered_map<LEG, LegData> propagate_gait(int step, double stride_length = 0.0, double swing_height = 0.0, const Eigen::Vector3d &relative_target = Eigen::Vector3d(0.08, 0.0, -0.08), double alpha = 0.0, double tilt_alpha = 0.0, double tilt_beta = 0.0);
 
     /**
      * @brief Computes trajectory and joint angles for a single leg at a given step.
@@ -158,7 +158,7 @@ public:
      * @param alpha Heading/direction angle in radians.
      * @return LegData Updated state for the specified leg.
      */
-    virtual LegData propagate_leg(LEG leg, int step, double stride_length = 0.0, double swing_height = 0.0, const Eigen::Vector3d &relative_target = Eigen::Vector3d(0.08, 0.0, -0.08), double alpha = 0.0);
+    virtual LegData propagate_leg(LEG leg, int step, double stride_length = 0.0, double swing_height = 0.0, const Eigen::Vector3d &relative_target = Eigen::Vector3d(0.08, 0.0, -0.08), double alpha = 0.0, double theta_alpha = 0.0, double theta_beta = 0.0);
 
     /**
      * @brief Retrieves stored LegData for a given leg ID.
