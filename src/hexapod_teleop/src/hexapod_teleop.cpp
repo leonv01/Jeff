@@ -19,7 +19,7 @@ HexapodTeleop::HexapodTeleop() : rclcpp::Node("hexapod_teleop_node")
   this->declare_parameter<int>("axes.r_roll", 2);
   this->declare_parameter<double>("tilt.deadzone", 0.1);
   
-  // this->declare_parameter<int>("axes.angular_z", 3);
+  this->declare_parameter<int>("axes.angular_z", 3);
 
   this->declare_parameter<double>("scale.linear_x", 0.5);
   this->declare_parameter<double>("scale.linear_y", 0.5);
