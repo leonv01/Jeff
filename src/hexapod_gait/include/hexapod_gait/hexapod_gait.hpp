@@ -52,11 +52,15 @@ private:
     /// @brief Current target velocity received from /cmd_vel topic.
     geometry_msgs::msg::Twist current_velocity_;
 
+    geometry_msgs::msg::Twist current_tilt_;
+
     /// @brief Subscription for switching gait mode dynamically.
     rclcpp::Subscription<std_msgs::msg::String>::SharedPtr gait_mode_sub_;
 
     /// @brief Subscription for target linear and angular velocities.
     rclcpp::Subscription<geometry_msgs::msg::Twist>::SharedPtr cmd_vel_sub_;
+
+    rclcpp::Subscription<geometry_msgs::msg::Twist>::SharedPtr tilt_sub_;
 
     /// @brief Subscription for body pose offsets.
     rclcpp::Subscription<geometry_msgs::msg::Pose>::SharedPtr body_pose_sub;
@@ -73,6 +77,8 @@ private:
      * @param msg Received Twist velocity message.
      */
     void cmd_vel_callback(const geometry_msgs::msg::Twist::SharedPtr msg);
+
+    void tilt_callback(const geometry_msgs::msg::Twist::SharedPtr msg);
 
     /**
      * @brief Callback function for switching the active gait strategy.

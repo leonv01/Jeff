@@ -23,6 +23,7 @@ public:
      * @return Eigen::Vector3d Vector containing calculated joint angles (coxa, femur, tibia) in radians.
      */
     static Eigen::Vector3d solve_ik(const Eigen::Vector3d &target);
+    static Eigen::Matrix3d rotation_matrix(double alpha, double beta, double gamma);
 
 private:
     /// @brief Coxa link length in meters (distance from coxa axis to femur axis: 40.0 mm).

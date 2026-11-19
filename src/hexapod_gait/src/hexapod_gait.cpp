@@ -36,12 +36,18 @@ HexapodGait::HexapodGait() : rclcpp::Node("hexapod_gait_node")
   this->declare_parameter<double>("step_max_distance", 0.140);
   this->declare_parameter<double>("step_min_distance", 0.070);
   this->declare_parameter<std::string>("default_gait_strategy", "tripod_gait");
+  this->declare_parameter<double>("max_tilt_angle", M_PI);
 
   int total_steps = this->get_parameter("total_steps").as_int();
 
   cmd_vel_sub_ = this->create_subscription<geometry_msgs::msg::Twist>(
     "/cmd_vel", 10,
     std::bind(&HexapodGait::cmd_vel_callback, this, std::placeholders::_1)
+  );
+
+  tilt_sub_ = this->create_subscription<geometry_msgs::msg::Twist>(
+    "/cmd_tilt", 10,
+    std::bind(&HexapodGait::tilt_callback, this, std::placeholders::_1)
   );
 
   gait_mode_sub_ = this->create_subscription<std_msgs::msg::String>(
@@ -71,6 +77,11 @@ HexapodGait::HexapodGait() : rclcpp::Node("hexapod_gait_node")
 void HexapodGait::cmd_vel_callback(const geometry_msgs::msg::Twist::SharedPtr msg)
 {
   current_velocity_ = *msg;
+}
+
+void HexapodGait::tilt_callback(const geometry_msgs::msg::Twist::SharedPtr msg)
+{
+  current_tilt_ = *msg;
 }
 
 void HexapodGait::gait_mode_callback(const std_msgs::msg::String::SharedPtr msg)
@@ -117,6 +128,13 @@ void HexapodGait::control_timer_callback()
 
   double vx = current_velocity_.linear.x;
   double vy = current_velocity_.linear.y;
+  double tx = current_tilt_.linear.x;
+  double ty = current_tilt_.linear.y;
+
+  double max_tilt_angle = this->get_parameter("max_tilt_angle").as_double();
+  double tilt_alpha = tx * max_tilt_angle;
+  double tilt_beta = ty * max_tilt_angle;
+
   double speed = std::sqrt(vx * vx + vy * vy);
   bool has_velocity = (speed > 0.001 || std::abs(current_velocity_.angular.z) > 0.001);
 
@@ -153,7 +171,15 @@ void HexapodGait::control_timer_callback()
 
   Eigen::Vector3d relative_target(step_distance, 0.0, current_depth);
 
-  std::unordered_map<LEG, LegData> leg_data = gait_strategy_->propagate_gait(step_counter_, stride_length, swing_height, relative_target, alpha);
+  std::unordered_map<LEG, LegData> leg_data = gait_strategy_->propagate_gait(
+    step_counter_, 
+    stride_length, 
+    swing_height, 
+    relative_target, 
+    alpha,
+    tilt_alpha,
+    tilt_beta
+  );
 
   /* ----------------------------- Prepare message ---------------------------- */
   auto joint_msg = sensor_msgs::msg::JointState();
