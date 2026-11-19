@@ -16,6 +16,7 @@
 
 #include <geometry_msgs/msg/twist.hpp>
 #include <geometry_msgs/msg/pose.hpp>
+#include <geometry_msgs/msg/vector3.hpp>
 #include <sensor_msgs/msg/joint_state.hpp>
 #include <rclcpp/rclcpp.hpp>
 #include <std_msgs/msg/string.hpp>
@@ -52,7 +53,7 @@ private:
     /// @brief Current target velocity received from /cmd_vel topic.
     geometry_msgs::msg::Twist current_velocity_;
 
-    geometry_msgs::msg::Twist current_tilt_;
+    geometry_msgs::msg::Vector3 current_tilt_;
 
     /// @brief Subscription for switching gait mode dynamically.
     rclcpp::Subscription<std_msgs::msg::String>::SharedPtr gait_mode_sub_;
@@ -60,7 +61,7 @@ private:
     /// @brief Subscription for target linear and angular velocities.
     rclcpp::Subscription<geometry_msgs::msg::Twist>::SharedPtr cmd_vel_sub_;
 
-    rclcpp::Subscription<geometry_msgs::msg::Twist>::SharedPtr tilt_sub_;
+    rclcpp::Subscription<geometry_msgs::msg::Vector3>::SharedPtr tilt_sub_;
 
     /// @brief Subscription for body pose offsets.
     rclcpp::Subscription<geometry_msgs::msg::Pose>::SharedPtr body_pose_sub;
@@ -78,7 +79,7 @@ private:
      */
     void cmd_vel_callback(const geometry_msgs::msg::Twist::SharedPtr msg);
 
-    void tilt_callback(const geometry_msgs::msg::Twist::SharedPtr msg);
+    void tilt_callback(const geometry_msgs::msg::Vector3::SharedPtr msg);
 
     /**
      * @brief Callback function for switching the active gait strategy.

@@ -18,7 +18,7 @@ namespace hexapod_gait
 #define LEG_COUNT 6
 
 /// @brief Distance from body center to leg mount base origin in millimeters (117.67 mm).
-#define LEG_DISTANCE 117.66964
+#define LEG_DISTANCE 0.11766964
 
 /**
  * @enum LEG

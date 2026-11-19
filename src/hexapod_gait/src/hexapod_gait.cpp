@@ -36,7 +36,7 @@ HexapodGait::HexapodGait() : rclcpp::Node("hexapod_gait_node")
   this->declare_parameter<double>("step_max_distance", 0.140);
   this->declare_parameter<double>("step_min_distance", 0.070);
   this->declare_parameter<std::string>("default_gait_strategy", "tripod_gait");
-  this->declare_parameter<double>("max_tilt_angle", M_PI);
+  this->declare_parameter<double>("max_tilt_angle", M_PI / 2.0);
 
   int total_steps = this->get_parameter("total_steps").as_int();
 
@@ -45,7 +45,7 @@ HexapodGait::HexapodGait() : rclcpp::Node("hexapod_gait_node")
     std::bind(&HexapodGait::cmd_vel_callback, this, std::placeholders::_1)
   );
 
-  tilt_sub_ = this->create_subscription<geometry_msgs::msg::Twist>(
+  tilt_sub_ = this->create_subscription<geometry_msgs::msg::Vector3>(
     "/cmd_tilt", 10,
     std::bind(&HexapodGait::tilt_callback, this, std::placeholders::_1)
   );
@@ -79,7 +79,7 @@ void HexapodGait::cmd_vel_callback(const geometry_msgs::msg::Twist::SharedPtr ms
   current_velocity_ = *msg;
 }
 
-void HexapodGait::tilt_callback(const geometry_msgs::msg::Twist::SharedPtr msg)
+void HexapodGait::tilt_callback(const geometry_msgs::msg::Vector3::SharedPtr msg)
 {
   current_tilt_ = *msg;
 }
@@ -128,8 +128,8 @@ void HexapodGait::control_timer_callback()
 
   double vx = current_velocity_.linear.x;
   double vy = current_velocity_.linear.y;
-  double tx = current_tilt_.linear.x;
-  double ty = current_tilt_.linear.y;
+  double tx = current_tilt_.x;
+  double ty = current_tilt_.y;
 
   double max_tilt_angle = this->get_parameter("max_tilt_angle").as_double();
   double tilt_alpha = tx * max_tilt_angle;

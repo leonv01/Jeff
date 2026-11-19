@@ -15,8 +15,8 @@ HexapodTeleop::HexapodTeleop() : rclcpp::Node("hexapod_teleop_node")
 
   this->declare_parameter<int>("axes.linear_x", 1);
   this->declare_parameter<int>("axes.linear_y", 0);
-  this->declare_parameter<int>("axes.r_pitch", 3);
-  this->declare_parameter<int>("axes.r_roll", 2);
+  this->declare_parameter<int>("axes.r_pitch", 4);
+  this->declare_parameter<int>("axes.r_roll", 3);
   this->declare_parameter<double>("tilt.deadzone", 0.1);
   
   this->declare_parameter<int>("axes.angular_z", 3);

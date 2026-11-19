@@ -76,11 +76,15 @@ LegData GaitStrategy::propagate_leg(LEG leg, int step, double stride_length, dou
     LegData leg_data = get_leg(leg);
 
     Eigen::Matrix3d R = HexapodIk::rotation_matrix(tilt_alpha, tilt_beta, 0.0);
-    Eigen::Vector3d planeNormal = Eigen::Vector3d::UnitZ();
     Eigen::Vector3d P = R * leg_data.base_point_;
 
-    Eigen::Vector3d adjusted_target = relative_target - P;
+    Eigen::Vector3d adjusted_target = relative_target; // - P;
+    adjusted_target(2) -= P(2);
 
+    RCLCPP_INFO(rclcpp::get_logger("gait_strategy"), "target: (%.2f, %.2f, %.2f) new: (%.2f, %.2f, %.2f)",
+            relative_target(0), relative_target(1), relative_target(2),
+            P(0), P(1), P(2));
+    
     const Eigen::Vector3d walk_dir(std::cos(alpha), std::sin(alpha), 0.0);
 
     double swing_fraction = 1.0 - duty_cycle_;

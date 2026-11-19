@@ -42,13 +42,13 @@ Eigen::Vector3d HexapodIk::solve_ik(const Eigen::Vector3d &target)
 
 Eigen::Matrix3d HexapodIk::rotation_matrix(double alpha, double beta, double gamma)
 {
-    Eigen::AngleAxisd rollAngle(alpha, Eigen::Vector3d::UnitZ());
-    Eigen::AngleAxisd yawAngle(beta, Eigen::Vector3d::UnitZ());
+    Eigen::AngleAxisd rollAngle(alpha, Eigen::Vector3d::UnitX());
+    Eigen::AngleAxisd yawAngle(beta, Eigen::Vector3d::UnitY());
     Eigen::AngleAxisd pitchAngle(gamma, Eigen::Vector3d::UnitZ());
 
-    Eigen::Quaternion<double> q = rollAngle * yawAngle * pitchAngle;
+    Eigen::Matrix3d R = (yawAngle * pitchAngle * rollAngle).toRotationMatrix();
 
-    return q.matrix();
+    return R;
 }
 
 } // namespace hexapod_gait
