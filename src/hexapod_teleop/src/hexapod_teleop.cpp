@@ -12,6 +12,7 @@ HexapodTeleop::HexapodTeleop() : rclcpp::Node("hexapod_teleop_node")
   this->declare_parameter<int>("buttons.stand_sit_toggle", 9);
   this->declare_parameter<int>("buttons.movement_toggle", 8);
   this->declare_parameter<int>("buttons.image_capture", 11);
+  this->declare_parameter<int>("buttons.lock_tilt", 4);
 
   this->declare_parameter<int>("axes.linear_x", 1);
   this->declare_parameter<int>("axes.linear_y", 0);
@@ -98,6 +99,7 @@ void HexapodTeleop::JoySubscriber(const sensor_msgs::msg::Joy::SharedPtr msg)
 
   std::string gait_mode = "";
   
+  bool lock_tilt = is_button_pressed(msg, "buttons.lock_tilt");
   bool image_capture = is_button_pressed(msg, "buttons.image_capture");
 
   if (is_button_pressed(msg, "buttons.tripod_gait")) gait_mode = "tripod_gait";
@@ -106,13 +108,6 @@ void HexapodTeleop::JoySubscriber(const sensor_msgs::msg::Joy::SharedPtr msg)
   else if (is_button_pressed(msg, "buttons.toggle_pose_mode")) gait_mode = "toggle_pose";
   else if (is_button_pressed(msg, "buttons.stand_sit_toggle")) gait_mode = "stand_sit_toggle";
   else if (is_button_pressed(msg, "buttons.movement_toggle")) gait_mode = "movement_toggle";
-
-  geometry_msgs::msg::Vector3 tilt_msg;
-  tilt_msg.x = roll;
-  tilt_msg.y = pitch;
-  tilt_msg.z = 0.0;
-
-  cmd_tilt_publisher_->publish(tilt_msg);
 
   if (gait_mode.empty() == false)
   {
@@ -129,6 +124,16 @@ void HexapodTeleop::JoySubscriber(const sensor_msgs::msg::Joy::SharedPtr msg)
     this->image_capture_publisher_->publish(image_capture_msg);
 
     RCLCPP_INFO(this->get_logger(), "Image Capture pressed");
+  }
+
+  if (lock_tilt)
+  {
+    geometry_msgs::msg::Vector3 tilt_msg;
+    tilt_msg.x = roll;
+    tilt_msg.y = pitch;
+    tilt_msg.z = 0.0;
+
+    cmd_tilt_publisher_->publish(tilt_msg);
   }
 }
 
