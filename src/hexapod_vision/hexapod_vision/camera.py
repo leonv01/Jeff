@@ -25,7 +25,7 @@ class ImagePublisher(Node):
         self.cooldown = self.get_parameter('cooldown').value
         self.last_capture_time = None
         
-        self.image_capute_sub_ = self.create_subscription(
+        self.image_capture_sub_ = self.create_subscription(
             Empty,
             "/image_capture",
             self.image_save_callback,
