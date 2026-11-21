@@ -37,6 +37,7 @@ private:
 
     GAIT_TYPE gait_type;
     bool is_button_pressed(const sensor_msgs::msg::Joy::SharedPtr msg, const std::string &param_name);
+    bool prev_dpad_up_ = false;
 };
 
 }

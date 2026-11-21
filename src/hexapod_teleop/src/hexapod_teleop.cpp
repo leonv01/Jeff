@@ -63,7 +63,7 @@ void HexapodTeleop::JoySubscriber(const sensor_msgs::msg::Joy::SharedPtr msg)
   bool dpad_left = (msg->axes.size() > 6 && msg->axes[6] > 0.5);
   bool dpad_right = (msg->axes.size() > 6 && msg->axes[6] < -0.5);
 
-  if (is_button_pressed(msg, "button.pose_setting"))
+  if (is_button_pressed(msg, "buttons.pose_setting"))
   {
     geometry_msgs::msg::Pose pose_msg;
     pose_msg.position.x = dpad_right ? 1.0 : (dpad_left ? -1.0 : 0.0);
@@ -73,12 +73,15 @@ void HexapodTeleop::JoySubscriber(const sensor_msgs::msg::Joy::SharedPtr msg)
   }
   else 
   {
-    std_msgs::msg::String gesture_msg;
-    if (dpad_up)
+    if (dpad_up && !prev_dpad_up_)
     {
+      std_msgs::msg::String gesture_msg;
+      gesture_msg.data = "wink_gesture";
       this->gesture_publisher_->publish(gesture_msg);
+      RCLCPP_INFO(this->get_logger(), "Triggered wink_gesture");
     }
   }
+  prev_dpad_up_ = dpad_up;
  
   geometry_msgs::msg::Twist twist;
 
