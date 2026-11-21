@@ -36,5 +36,4 @@ jobs:
       - name: Run ROS 2 CI
         uses: ros-tooling/action-ros-ci@v0.3
         with:
-          package-name: hexapod_hal
           target-ros2-distro: ${{ matrix.ros_distro }}
