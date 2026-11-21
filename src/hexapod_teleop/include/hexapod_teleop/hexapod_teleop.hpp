@@ -33,6 +33,7 @@ private:
     rclcpp::Publisher<geometry_msgs::msg::Pose>::SharedPtr body_pose_publisher_;
     rclcpp::Publisher<std_msgs::msg::Empty>::SharedPtr image_capture_publisher_;
     rclcpp::Publisher<geometry_msgs::msg::Vector3>::SharedPtr cmd_tilt_publisher_;
+    rclcpp::Publisher<std_msgs::msg::String>::SharedPtr gesture_publisher_;
 
     GAIT_TYPE gait_type;
     bool is_button_pressed(const sensor_msgs::msg::Joy::SharedPtr msg, const std::string &param_name);

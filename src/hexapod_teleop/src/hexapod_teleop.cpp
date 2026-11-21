@@ -13,6 +13,7 @@ HexapodTeleop::HexapodTeleop() : rclcpp::Node("hexapod_teleop_node")
   this->declare_parameter<int>("buttons.movement_toggle", 8);
   this->declare_parameter<int>("buttons.image_capture", 11);
   this->declare_parameter<int>("buttons.lock_tilt", 4);
+  this->declare_parameter<int>("buttons.pose_setting", 4);
 
   this->declare_parameter<int>("axes.linear_x", 1);
   this->declare_parameter<int>("axes.linear_y", 0);
@@ -35,6 +36,7 @@ HexapodTeleop::HexapodTeleop() : rclcpp::Node("hexapod_teleop_node")
   body_pose_publisher_ = this->create_publisher<geometry_msgs::msg::Pose>("/body_pose", 10);
   image_capture_publisher_ = this->create_publisher<std_msgs::msg::Empty>("/image_capture", 10);
   cmd_tilt_publisher_ = this->create_publisher<geometry_msgs::msg::Vector3>("/cmd_tilt", 10);
+  gesture_publisher_ = this->create_publisher<std_msgs::msg::String>("/gesture", 10);
 
   RCLCPP_INFO(this->get_logger(), "Hexapod Teleop Node initialized listening to /joy and publishing to /cmd_vel and /gait_mode");
 }
@@ -53,20 +55,31 @@ void HexapodTeleop::JoySubscriber(const sensor_msgs::msg::Joy::SharedPtr msg)
   double scale_ly = this->get_parameter("scale.linear_y").as_double();
   double scale_az = this->get_parameter("scale.angular_z").as_double();
 
+  double roll = 0.0;
+  double pitch = 0.0;
+
   bool dpad_up = (msg->axes.size() > 7 && msg->axes[7] > 0.5);
   bool dpad_down = (msg->axes.size() > 7 && msg->axes[7] < -0.5);
   bool dpad_left = (msg->axes.size() > 6 && msg->axes[6] > 0.5);
   bool dpad_right = (msg->axes.size() > 6 && msg->axes[6] < -0.5);
 
-  double roll = 0.0;
-  double pitch = 0.0;
+  if (is_button_pressed(msg, "button.pose_setting"))
+  {
+    geometry_msgs::msg::Pose pose_msg;
+    pose_msg.position.x = dpad_right ? 1.0 : (dpad_left ? -1.0 : 0.0);
+    pose_msg.position.z = dpad_up ? 1.0 : (dpad_down ? -1.0 : 0.0);
 
-  geometry_msgs::msg::Pose pose_msg;
-  pose_msg.position.x = dpad_right ? 1.0 : (dpad_left ? -1.0 : 0.0);
-  pose_msg.position.z = dpad_up ? 1.0 : (dpad_down ? -1.0 : 0.0);
-
-  body_pose_publisher_->publish(pose_msg);
-
+    body_pose_publisher_->publish(pose_msg);
+  }
+  else 
+  {
+    std_msgs::msg::String gesture_msg;
+    if (dpad_up)
+    {
+      this->gesture_publisher_->publish(gesture_msg);
+    }
+  }
+ 
   geometry_msgs::msg::Twist twist;
 
   if (axis_lx >= 0 && static_cast<size_t>(axis_lx) < msg->axes.size())
