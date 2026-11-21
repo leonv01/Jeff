@@ -11,6 +11,7 @@
 #include "hexapod_gait/hexapod_ik.hpp"
 
 #include "gait_strategy/gait_strategy.hpp"
+#include "gesture_strategy/gesture_strategy.hpp"
 #include "phase_sm/phase_sm.hpp"
 #include "movement_sm/movement_sm.hpp"
 
@@ -50,6 +51,8 @@ private:
     /// @brief Active gait strategy implementation (e.g. tripod, wave, ripple).
     std::unique_ptr<GaitStrategy> gait_strategy_;
 
+    std::unique_ptr<GestureStrategy> gesture_strategy_;
+
     /// @brief Current target velocity received from /cmd_vel topic.
     geometry_msgs::msg::Twist current_velocity_;
 
@@ -66,8 +69,11 @@ private:
     /// @brief Subscription for body pose offsets.
     rclcpp::Subscription<geometry_msgs::msg::Pose>::SharedPtr body_pose_sub;
 
+    rclcpp::Subscription<std_msgs::msg::String>::SharedPtr gesture_sub_;
+
     /// @brief Publisher for output joint states of all 6 legs (18 joints total).
     rclcpp::Publisher<sensor_msgs::msg::JointState>::SharedPtr joint_state_pub_;
+
 
     HexapodPhaseSM phase_sm_;
 
@@ -92,6 +98,8 @@ private:
      * @param msg Received Pose message representing body position/orientation target.
      */
     void body_pose_callback(const geometry_msgs::msg::Pose::SharedPtr msg);
+
+    void gesture_callback(const std_msgs::msg::String::SharedPtr msg);
 
 
     /// @brief Wall timer driving periodic control loop execution.

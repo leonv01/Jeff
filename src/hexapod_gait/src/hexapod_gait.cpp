@@ -8,6 +8,7 @@
 #include "hexapod_gait/hexapod_gait.hpp"
 
 #include "gait_factory/gait_factory.hpp"
+#include "gesture_factory/gesture_factory.hpp"
 #include "movement_factory/movement_factory.hpp"
 
 #include <string>
@@ -60,12 +61,18 @@ HexapodGait::HexapodGait() : rclcpp::Node("hexapod_gait_node")
     "/joint_commands", 10
   );
 
+  gesture_sub_ = this->create_subscription<std_msgs::msg::String>(
+    "/gesture", 10,
+    std::bind(&HexapodGait::gesture_callback, this, std::placeholders::_1)
+  );
+
   body_pose_sub = this->create_subscription<geometry_msgs::msg::Pose>(
     "/body_pose", 10,
     std::bind(&HexapodGait::body_pose_callback, this, std::placeholders::_1)
   );
 
   gait_strategy_ = std::move(GaitFactory::create_gait(this->get_parameter("default_gait_strategy").as_string(), total_steps));
+
 
   control_timer_ = this->create_wall_timer(
     std::chrono::milliseconds(CONTROL_TIMER_INTERVAL),
@@ -84,6 +91,22 @@ void HexapodGait::tilt_callback(const geometry_msgs::msg::Vector3::SharedPtr msg
 {
   current_tilt_ = *msg;
 }
+
+void HexapodGait::gesture_callback(const std_msgs::msg::String::SharedPtr msg)
+{
+  const std::string &gesture_name = msg->data.empty() ? "wink_gesture" : msg->data;
+  gesture_strategy_ = std::move(GestureFactory::create_gesture(gesture_name));
+  if (gesture_strategy_)
+  {
+    gesture_strategy_->start_gesture();
+    RCLCPP_INFO(this->get_logger(), "Started gesture: %s", gesture_name.c_str());
+  }
+  else
+  {
+    RCLCPP_WARN(this->get_logger(), "Unknown gesture requested: %s", gesture_name.c_str());
+  }
+}
+
 
 void HexapodGait::gait_mode_callback(const std_msgs::msg::String::SharedPtr msg)
 {
@@ -181,6 +204,16 @@ void HexapodGait::control_timer_callback()
     tilt_alpha,
     tilt_beta
   );
+
+  if (gesture_strategy_ && gesture_strategy_->get_gesture_state() == GESTURE_ACTIVE)
+  {
+    auto gesture_legs = gesture_strategy_->propagate_gesture(dt, step_distance, current_depth);
+    
+    for (const auto &[leg, data] : gesture_legs)
+    {
+      leg_data[leg] = data;
+    }
+  }
 
   /* ----------------------------- Prepare message ---------------------------- */
   auto joint_msg = sensor_msgs::msg::JointState();
