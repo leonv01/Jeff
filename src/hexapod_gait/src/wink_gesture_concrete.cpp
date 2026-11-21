@@ -26,17 +26,20 @@ std::unordered_map<LEG, LegData> WinkGestureConcrete::propagate_gesture(
     const double wave_amplitude = 0.035;
     const int wave_cycles = 2;
 
+    // Lift leg up
     if (p < 0.25)
     {
         double t = p / 0.25;
         target_z = current_depth + 0.5 * (1.0 - std::cos(t * M_PI)) * lift_height;
     }
+    // Rotate leg
     else if (p < 0.75)
     {
         target_z = current_depth + lift_height;
         double t = (p - 0.25) / 0.50;
         target_y = wave_amplitude * std::sin(t * wave_cycles * 2.0 * M_PI);
     }
+    // Lift leg down
     else
     {
         double t = (p - 0.75) / 0.25;
