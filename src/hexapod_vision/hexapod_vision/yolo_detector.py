@@ -1,3 +1,5 @@
+import os
+import time
 import rclpy
 from rclpy.node import Node
 from rclpy.parameter import Parameter
@@ -6,7 +8,8 @@ from sensor_msgs.msg import Image
 from vision_msgs.msg import Detection2DArray, Detection2D, ObjectHypothesisWithPose
 from cv_bridge import CvBridge
 from ultralytics import YOLO
-
+from std_msgs.msg import Empty
+import cv2
 class YoloDetector(Node):
     def __init__(self):
         super().__init__('yolo_detector_node')
@@ -33,6 +36,18 @@ class YoloDetector(Node):
         self.pub_img = self.create_publisher(Image, 'yolo/annotated', 1)
         self.pub_det = self.create_publisher(Detection2DArray, 'yolo/detections', 10)
         self.pub_conf = self.create_publisher(Detection2DArray, 'yolo/confirmed', 10)
+        self.image_capture_sub_ = self.create_subscription(
+            Empty,
+            "/image_capture",
+            self.image_save_callback,
+            10
+        )
+        self.save_dir = "/home/ws/image_captures"
+        self.cooldown = 2.0
+        self.last_capture_time = None
+        self.latest_result = None
+        self.latest_result_time = None
+        os.makedirs(self.save_dir, exist_ok=True)
         
         self.get_logger().info(
             f'YOLO detector ready (track={self.track}, every_n={self.every_n}, '
@@ -114,7 +129,32 @@ class YoloDetector(Node):
             annotated = self.br.cv2_to_imgmsg(result.plot(), 'bgr8')
             annotated.header = msg.header
             self.pub_img.publish(annotated)
-        
+            
+        self.latest_result = result
+        self.latest_result_time = self.get_clock().now()
+
+    def image_save_callback(self, msg):
+        now = self.get_clock().now()
+        if (self.last_capture_time is not None and
+        (now - self.last_capture_time).nanoseconds * 1e-9 < self.cooldown):
+            self.get_logger().info('Capture ignored (cooldown active)')
+            return
+
+        # refuse to save if there is no result yet, or the camera stream has stalled
+        if (self.latest_result is None or
+                (now - self.latest_result_time).nanoseconds * 1e-9 > 1.0):
+            self.get_logger().warn('No recent detection frame to save')
+            return
+
+        annotated = self.latest_result.plot()   # frame with boxes, labels, track IDs
+        timestr = time.strftime("%Y%m%d-%H%M%S")
+        path = f'{self.save_dir}/{timestr}_yolo.jpg'
+        if cv2.imwrite(path, annotated):
+            self.get_logger().info(f'Saved {path}')
+            self.last_capture_time = now
+        else:
+            self.get_logger().error(f'Failed to write {path}')
+
 def main(args=None):
     rclpy.init(args=args)
     node = YoloDetector()
