@@ -22,14 +22,14 @@ TripodGaitConcrete::TripodGaitConcrete(double duty_cycle, double total_cycle_ste
 {
 }
 
-std::unordered_map<LEG, LegData> TripodGaitConcrete::propagate_gait(int step, double stride_length, double swing_height, const Eigen::Vector3d &relative_target, double alpha, double tilt_alpha, double tilt_beta)
+std::unordered_map<LEG, LegData> TripodGaitConcrete::propagate_gait(int step, double stride_length, double swing_height, const Eigen::Vector3d &relative_target, double alpha, double tilt_alpha, double tilt_beta, double angular_z)
 {
-    return GaitStrategy::propagate_gait(step, stride_length, swing_height, relative_target, alpha, tilt_alpha, tilt_beta);
+    return GaitStrategy::propagate_gait(step, stride_length, swing_height, relative_target, alpha, tilt_alpha, tilt_beta, angular_z);
 }
 
-LegData TripodGaitConcrete::propagate_leg(LEG leg, int step, double stride_length, double swing_height, const Eigen::Vector3d &relative_target, double alpha, double tilt_alpha, double tilt_beta)
+LegData TripodGaitConcrete::propagate_leg(LEG leg, int step, double stride_length, double swing_height, const Eigen::Vector3d &relative_target, double alpha, double tilt_alpha, double tilt_beta, double angular_z)
 {
-    return GaitStrategy::propagate_leg(leg, step, stride_length, swing_height, relative_target, alpha, tilt_alpha, tilt_beta);
+    return GaitStrategy::propagate_leg(leg, step, stride_length, swing_height, relative_target, alpha, tilt_alpha, tilt_beta, angular_z);
 }
 
 }
