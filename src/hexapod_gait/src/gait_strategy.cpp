@@ -62,16 +62,16 @@ GaitStrategy::GaitStrategy(double duty_cycle, std::unordered_map<LEG, double> le
 {
 }
 
-std::unordered_map<LEG, LegData> GaitStrategy::propagate_gait(int step, double stride_length, double swing_height, const Eigen::Vector3d &relative_target, double alpha, double tilt_alpha, double tilt_beta)
+std::unordered_map<LEG, LegData> GaitStrategy::propagate_gait(int step, double stride_length, double swing_height, const Eigen::Vector3d &relative_target, double alpha, double tilt_alpha, double tilt_beta, double angular_z)
 {
-    std::for_each(leg_map_.begin(), leg_map_.end(), [this, step, stride_length, swing_height, relative_target, alpha, tilt_alpha, tilt_beta](auto& leg_entry) {
-        leg_entry.second = this->propagate_leg(leg_entry.first, step, stride_length, swing_height, relative_target, alpha, tilt_alpha, tilt_beta);
+    std::for_each(leg_map_.begin(), leg_map_.end(), [this, step, stride_length, swing_height, relative_target, alpha, tilt_alpha, tilt_beta, angular_z](auto& leg_entry) {
+        leg_entry.second = this->propagate_leg(leg_entry.first, step, stride_length, swing_height, relative_target, alpha, tilt_alpha, tilt_beta, angular_z);
     });
 
     return leg_map_;
 }
 
-LegData GaitStrategy::propagate_leg(LEG leg, int step, double stride_length, double swing_height, const Eigen::Vector3d &relative_target, double alpha, double tilt_alpha, double tilt_beta)
+LegData GaitStrategy::propagate_leg(LEG leg, int step, double stride_length, double swing_height, const Eigen::Vector3d &relative_target, double alpha, double tilt_alpha, double tilt_beta, double angular_z)
 {
     LegData leg_data = get_leg(leg);
 
@@ -95,17 +95,29 @@ LegData GaitStrategy::propagate_leg(LEG leg, int step, double stride_length, dou
     Eigen::Matrix3d T_leg = Eigen::AngleAxisd(mount_angle, Eigen::Vector3d::UnitZ()).toRotationMatrix();
     Eigen::Matrix3d T_leg_t = T_leg.transpose();
 
+    Eigen::Vector3d step_dir;
+
+    if (std::abs(angular_z) > 0.001 && stride_length > 0.0)
+    {
+        Eigen::Vector3d tangent(-std::sin(mount_angle), std::cos(mount_angle), 0.0);
+        step_dir = (angular_z > 0.0 ? 1.0 : -1.0) * tangent;
+    }
+    else
+    {
+        step_dir = Eigen::Vector3d(std::cos(alpha), std::sin(alpha), 0.0);
+    }
+
     Eigen::Vector3d offset_body;
     if (leg_phase < swing_fraction)
     {
         double t = leg_phase / swing_fraction;
         double phi = t * M_PI;
-        offset_body = -walk_dir * (stride_length / 2.0) * std::cos(phi) + Eigen::Vector3d(0.0, 0.0, swing_height * std::sin(phi));
+        offset_body = -step_dir * (stride_length / 2.0) * std::cos(phi) + Eigen::Vector3d(0.0, 0.0, swing_height * std::sin(phi));
     }
     else
     {
         double tau = (leg_phase - swing_fraction) / duty_cycle_;
-        offset_body = walk_dir * (stride_length / 2.0) * (1.0 - 2.0 * tau);
+        offset_body = step_dir * (stride_length / 2.0) * (1.0 - 2.0 * tau);
     }
 
     const Eigen::Vector3d P_home_local = adjusted_target.transpose();

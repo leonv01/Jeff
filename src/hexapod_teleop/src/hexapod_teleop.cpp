@@ -93,6 +93,10 @@ void HexapodTeleop::JoySubscriber(const sensor_msgs::msg::Joy::SharedPtr msg)
   {
     twist.linear.y = msg->axes[axis_ly] * scale_ly;
   }
+  if (axis_az >= 0 && static_cast<size_t>(axis_az) < msg->axes.size())
+  {
+    twist.angular.z = msg->axes[axis_az] * scale_az;
+  }
 
   if (axis_r_roll >= 0 && static_cast<size_t>(axis_r_roll) < msg->axes.size())
   {

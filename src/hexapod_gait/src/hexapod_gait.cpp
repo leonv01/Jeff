@@ -152,6 +152,8 @@ void HexapodGait::control_timer_callback()
 
   double vx = current_velocity_.linear.x;
   double vy = current_velocity_.linear.y;
+  double wz = current_velocity_.angular.z;
+
   double tx = current_tilt_.x;
   double ty = current_tilt_.y;
 
@@ -159,8 +161,11 @@ void HexapodGait::control_timer_callback()
   double tilt_alpha = tx * max_tilt_angle;
   double tilt_beta = ty * max_tilt_angle;
 
-  double speed = std::sqrt(vx * vx + vy * vy);
-  bool has_velocity = (speed > 0.001 || std::abs(current_velocity_.angular.z) > 0.001);
+  double linear_speed = std::hypot(vx, vy);
+  double angular_speed = std::abs(wz) * LEG_DISTANCE;
+  double effective_speed = linear_speed + angular_speed;
+  
+  bool has_velocity = (linear_speed > 0.001 || std::abs(current_velocity_.angular.z) > 0.001);
 
   /* -------------------------- Update state machine -------------------------- */
   phase_sm_.update(dt, has_velocity);
@@ -179,7 +184,7 @@ void HexapodGait::control_timer_callback()
   double swing_height = this->get_parameter("swing_height").as_double();
 
   bool is_walking = phase_sm_.can_walk();
-  double stride_length = (is_walking) ? std::clamp(speed * speed_factor, speed_increment, max_stride_length) : 0.0;
+  double stride_length = (is_walking) ? std::clamp(effective_speed * speed_factor, speed_increment, max_stride_length) : 0.0;
   swing_height = (is_walking) ? swing_height : 0.0;
   
   if (is_walking)
@@ -202,7 +207,8 @@ void HexapodGait::control_timer_callback()
     relative_target, 
     alpha,
     tilt_alpha,
-    tilt_beta
+    tilt_beta,
+    wz
   );
 
   if (gesture_strategy_ && gesture_strategy_->get_gesture_state() == GESTURE_ACTIVE)
