@@ -42,6 +42,10 @@ public:
      */
     HexapodGait();
     
+    /**
+     * @brief Helper function to apply the correct offsets and direction changes for the actuators based on the installation and direction.
+     * @param leg_data The LegData structure containing leg-specific data.
+     */
     void adjust_leg_angles(LegData &leg_data);
 
 private:
@@ -51,11 +55,13 @@ private:
     /// @brief Active gait strategy implementation (e.g. tripod, wave, ripple).
     std::unique_ptr<GaitStrategy> gait_strategy_;
 
+    /// @brief Active gesture strategy implementation (e.g. wink).
     std::unique_ptr<GestureStrategy> gesture_strategy_;
 
     /// @brief Current target velocity received from /cmd_vel topic.
     geometry_msgs::msg::Twist current_velocity_;
 
+    /// @brief Current tilt data received from /body_tilt topic.
     geometry_msgs::msg::Vector3 current_tilt_;
 
     /// @brief Subscription for switching gait mode dynamically.
@@ -64,19 +70,22 @@ private:
     /// @brief Subscription for target linear and angular velocities.
     rclcpp::Subscription<geometry_msgs::msg::Twist>::SharedPtr cmd_vel_sub_;
 
+    /// @brief Subscription for tilting the body.
     rclcpp::Subscription<geometry_msgs::msg::Vector3>::SharedPtr tilt_sub_;
 
     /// @brief Subscription for body pose offsets.
     rclcpp::Subscription<geometry_msgs::msg::Pose>::SharedPtr body_pose_sub;
 
+    /// @brief Subscription for gestures to be executed.
     rclcpp::Subscription<std_msgs::msg::String>::SharedPtr gesture_sub_;
 
     /// @brief Publisher for output joint states of all 6 legs (18 joints total).
     rclcpp::Publisher<sensor_msgs::msg::JointState>::SharedPtr joint_state_pub_;
 
-
+    /// @brief State machine of the robot's phase.
     HexapodPhaseSM phase_sm_;
 
+    /// @brief State machine of the robot's movement.
     MovementSM movement_sm_;
 
     /**
@@ -85,6 +94,10 @@ private:
      */
     void cmd_vel_callback(const geometry_msgs::msg::Twist::SharedPtr msg);
 
+    /**
+     * @brief Callback function for processing incoming tilt commands.
+     * @param msg Received Vector tilt message.
+     */
     void tilt_callback(const geometry_msgs::msg::Vector3::SharedPtr msg);
 
     /**
@@ -99,8 +112,11 @@ private:
      */
     void body_pose_callback(const geometry_msgs::msg::Pose::SharedPtr msg);
 
+    /**
+     * @brief Callback function for processing gesture inputs.
+     * @param msg Received gesture message representing gesture input.
+     */
     void gesture_callback(const std_msgs::msg::String::SharedPtr msg);
-
 
     /// @brief Wall timer driving periodic control loop execution.
     rclcpp::TimerBase::SharedPtr control_timer_;
