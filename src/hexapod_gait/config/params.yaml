@@ -13,3 +13,5 @@ hexapod_gait_node:
     step_max_distance: 0.140
     step_min_distance: 0.070
     default_gait_strategy: "tripod_gait"
+    max_tilt_angle: 0.448798950513
+    tilting_offset: 0.05
