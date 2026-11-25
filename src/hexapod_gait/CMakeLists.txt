@@ -14,21 +14,21 @@ find_package(std_msgs REQUIRED)
 find_package(Eigen3 REQUIRED)
 
 add_executable(hexapod_gait
-  src/hexapod_gait.cpp
-  src/hexapod_ik.cpp
-  src/trajectory_generator.cpp
-  src/gait_strategy.cpp
-  src/gait_factory.cpp
-  src/riple_gait_concrete.cpp
-  src/wave_gait_concrete.cpp
-  src/tripod_gait_concrete.cpp
-  src/phase_sm.cpp
-  src/movement_factory.cpp
-  src/holonomic_movement_concrete.cpp
-  src/non_holonomic_movement_concrete.cpp
-  src/movement_sm.cpp
-  src/wink_gesture_concrete.cpp
-  src/gesture_factory.cpp
+  src/hexapod_gait/hexapod_gait.cpp
+  src/hexapod_gait/hexapod_ik.cpp
+  src/hexapod_gait/trajectory_generator.cpp
+  src/gait_strategy/gait_strategy.cpp
+  src/gait_factory/gait_factory.cpp
+  src/gait_strategy/riple_gait_concrete.cpp
+  src/gait_strategy/wave_gait_concrete.cpp
+  src/gait_strategy/tripod_gait_concrete.cpp
+  src/phase_sm/phase_sm.cpp
+  src/movement_factory/movement_factory.cpp
+  src/movement_strategy/holonomic_movement_concrete.cpp
+  src/movement_strategy/non_holonomic_movement_concrete.cpp
+  src/movement_sm/movement_sm.cpp
+  src/gesture_strategy/wink_gesture_concrete.cpp
+  src/gesture_factory/gesture_factory.cpp
 )
 target_include_directories(hexapod_gait PUBLIC
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
@@ -63,20 +63,20 @@ if(BUILD_TESTING)
 
   ament_add_gtest(test_leg_ik
     test/test_leg_ik.cpp
-    src/hexapod_ik.cpp
-    src/gait_strategy.cpp
-    src/gait_factory.cpp
-    src/riple_gait_concrete.cpp
-    src/wave_gait_concrete.cpp
-    src/tripod_gait_concrete.cpp
-    src/trajectory_generator.cpp
-    src/phase_sm.cpp
-    src/movement_factory.cpp
-    src/holonomic_movement_concrete.cpp
-    src/non_holonomic_movement_concrete.cpp
-    src/movement_sm.cpp
-    src/wink_gesture_concrete.cpp
-    src/gesture_factory.cpp
+    src/hexapod_gait/hexapod_ik.cpp
+    src/hexapod_gait/trajectory_generator.cpp
+    src/gait_strategy/gait_strategy.cpp
+    src/gait_factory/gait_factory.cpp
+    src/gait_strategy/riple_gait_concrete.cpp
+    src/gait_strategy/wave_gait_concrete.cpp
+    src/gait_strategy/tripod_gait_concrete.cpp
+    src/phase_sm/phase_sm.cpp
+    src/movement_factory/movement_factory.cpp
+    src/movement_strategy/holonomic_movement_concrete.cpp
+    src/movement_strategy/non_holonomic_movement_concrete.cpp
+    src/movement_sm/movement_sm.cpp
+    src/gesture_strategy/wink_gesture_concrete.cpp
+    src/gesture_factory/gesture_factory.cpp
   )
   target_include_directories(test_leg_ik PUBLIC
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
@@ -88,6 +88,9 @@ if(BUILD_TESTING)
   )
   ament_target_dependencies(test_leg_ik
     rclcpp
+    sensor_msgs
+    geometry_msgs
+    std_msgs
   )
 endif()
 

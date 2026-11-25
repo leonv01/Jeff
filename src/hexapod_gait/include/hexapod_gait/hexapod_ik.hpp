@@ -1,6 +1,6 @@
 /**
  * @file hexapod_ik.hpp
- * @brief 3-DOF Analytical Inverse Kinematics solver for hexapod leg mechanisms.
+ * @brief 3-DOF Inverse Kinematics solver for hexapod leg mechanisms.
  */
 
 #ifndef HEXAPOD_IK_HPP_
@@ -23,6 +23,14 @@ public:
      * @return Eigen::Vector3d Vector containing calculated joint angles (coxa, femur, tibia) in radians.
      */
     static Eigen::Vector3d solve_ik(const Eigen::Vector3d &target);
+
+    /**
+     * @brief Helper function to create a 3x3 rotation matrix.
+     * @param alpha Rotation about the x-axis in radians.
+     * @param beta Rotation about the y-axis in radians.
+     * @param gamma Rotation about the z-axis in radians.
+     * @return Eigen::Matrix3d 3x3 rotation matrix.
+     */
     static Eigen::Matrix3d rotation_matrix(double alpha, double beta, double gamma);
 
 private:
