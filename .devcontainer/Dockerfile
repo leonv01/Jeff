@@ -54,6 +54,8 @@ RUN pip3 install --no-cache-dir torch torchvision --index-url https://download.p
 # Install Ultralytics YOLO (pinned numpy<2 and opencv-python<5 for ROS 2 Humble cv_bridge compatibility)
 RUN pip3 install --no-cache-dir "setuptools<80" "packaging>=22.0" "numpy<2" "opencv-python<5" ultralytics
 
+RUN pip3 install gpiod adafruit-extended-bus
+
 # Build and install PiPCA9685 library
 WORKDIR /opt
 RUN git clone https://github.com/barulicm/PiPCA9685.git \

@@ -12,7 +12,7 @@ def generate_launch_description():
     # Launch Arguments
     bus_number_arg = DeclareLaunchArgument(
         'bus_number',
-        default_value='1',
+        default_value='4',
         description='I2C Bus number on Raspberry Pi',
     )
     device_address_arg = DeclareLaunchArgument(

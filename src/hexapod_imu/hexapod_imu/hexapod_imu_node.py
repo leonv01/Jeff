@@ -17,12 +17,12 @@ class HexapodIMUNode(Node):
         super().__init__('hexapod_imu_node')
 
         # Declare ROS 2 Parameters
-        self.declare_parameter('bus_number', 1)
+        self.declare_parameter('bus_number', 4)
         self.declare_parameter('device_address', DEFAULT_ADDRESS)
         self.declare_parameter('frame_id', 'imu_link')
         self.declare_parameter('publish_rate', 50.0)  # Hz
 
-        bus_num = self.get_parameter('bus_number').get_parameter_value().integer_value
+        bus_num = 4#self.get_parameter('bus_number').get_parameter_value().integer_value
         address = self.get_parameter('device_address').get_parameter_value().integer_value
         self.frame_id = self.get_parameter('frame_id').get_parameter_value().string_value
         publish_rate = self.get_parameter('publish_rate').get_parameter_value().double_value
