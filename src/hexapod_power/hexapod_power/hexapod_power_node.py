@@ -15,15 +15,19 @@ class HexapodPowerNode(Node):
         super().__init__('hexapod_power_node')
     
         # Declare parameters with default values
-        self.declare_parameter('i2c_address', 0x42)
+        self.declare_parameter('i2c_bus', 4)
+        self.declare_parameter('i2c_address', 0x40)
         self.declare_parameter('use_mock', False)
         self.declare_parameter('update_rate_hz', 1.0)
         self.declare_parameter('num_cells', 2)
+        self.declare_parameter('battery_channel', 3)
 
         i2c_address = self.get_parameter('i2c_address').value
+        i2c_bus = self.get_parameter('i2c_bus').value
         use_mock = self.get_parameter('use_mock').value
         update_rate = self.get_parameter('update_rate_hz').value
         num_cells = self.get_parameter('num_cells').value
+        self.battery_channel = self.get_parameter('battery_channel').value
 
         # Convert hex string if passed as string parameter from launch
         if isinstance(i2c_address, str):
@@ -32,7 +36,7 @@ class HexapodPowerNode(Node):
         if use_mock:
             self.strategy: PowerStrategy = MockPowerConcrete()
         else:
-            self.strategy: PowerStrategy = INA3221Concrete(i2c_address=i2c_address)
+            self.strategy: PowerStrategy = INA3221Concrete(i2c_bus=i2c_bus, i2c_address=i2c_address)
 
         self.battery_type: BatteryStrategy = LiFePO4Concrete(num_cells=num_cells, low_battery_threshold=0.2)
         
@@ -54,8 +58,12 @@ class HexapodPowerNode(Node):
         if not telemetry.is_healthy or not telemetry.channels:
             self.get_logger().warn("Power telemetry not available or unhealthy")
             return
-        
-        ch1 = telemetry.channels[0]
+
+        idx = self.battery_channel - 1
+        if idx < 0 or idx >= len(telemetry.channels):
+            self.get_logger().error(f"battery_channel {self.battery_channel} is out of range")
+            return
+        ch1 = telemetry.channels[idx] 
         timestamp = self.get_clock().now().to_msg()
         
         batt_msg = BatteryState()

@@ -8,7 +8,7 @@ def generate_launch_description():
     # Declare Launch Arguments
     i2c_address_arg = DeclareLaunchArgument(
         'i2c_address',
-        default_value='0x42',
+        default_value='0x40',
         description='I2C Address for the INA3221 sensor board'
     )
 
@@ -30,11 +30,6 @@ def generate_launch_description():
         executable='hexapod_power_node',
         name='hexapod_power_node',
         output='screen',
-        parameters=[{
-            'i2c_address': LaunchConfiguration('i2c_address'),
-            'use_mock': LaunchConfiguration('use_mock'),
-            'update_rate_hz': LaunchConfiguration('update_rate_hz'),
-        }]
     )
 
     return LaunchDescription([
